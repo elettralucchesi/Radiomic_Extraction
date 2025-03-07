@@ -352,3 +352,108 @@ def test_new_patient_id_negative_values():
     existing_ids = {1, -2, 3, -1}
     with pytest.raises(ValueError, match="Patient IDs cannot be negative"):
         new_patient_id(existing_ids)
+
+
+
+def test_assign_patient_ids_type_error():
+    """
+    Test that the function raises a TypeError when images_path is not a list.
+
+    GIVEN: A non-list input for images_path.
+    WHEN: The assign_patient_ids function is called.
+    THEN: The function raises a TypeError with the appropriate message.
+    """
+    invalid_input = "not_a_list"  # A string, not a list
+    with pytest.raises(TypeError, match="images_path must be a list"):
+        assign_patient_ids(invalid_input)
+
+
+def test_assign_patient_ids_empty_list_error():
+    """
+    Test that the function raises an error when an empty list is passed as images_path.
+
+    GIVEN: An empty list of image file paths.
+    WHEN: The assign_patient_ids function is called.
+    THEN: The function raises a ValueError with an appropriate message.
+    """
+    images_path = []
+
+    with pytest.raises(ValueError, match="The list of image paths cannot be empty"):
+        assign_patient_ids(images_path)
+
+
+def test_assign_patient_ids_existing_ids():
+    """
+    Test that the function extracts existing patient IDs correctly.
+
+    GIVEN: A list of image file paths containing patient IDs in the format 'PR<number>'.
+    WHEN: The assign_patient_ids function is called.
+    THEN: The function extracts the correct patient IDs for each image path.
+    """
+    images_path = [
+        "../Radiomic_Features_Extraction/data/PR2/PR2_T2W_TSE_AX.nii",
+        "../Radiomic_Features_Extraction/data/PR3/PR3_T2W_TSE_AX.nii",
+    ]
+
+    patient_ids = assign_patient_ids(images_path)
+
+    # Assert the correct patient IDs are extracted
+    assert patient_ids == {2, 3}, f" Expected patient IDs {2, 3}, but got {patient_ids} "
+
+
+def test_assign_patient_ids_no_existing_ids():
+    """
+    Test that the function assigns new patient IDs when no existing IDs are found in the file names.
+
+    GIVEN: A list of image file paths without valid patient IDs.
+    WHEN: The assign_patient_ids function is called.
+    THEN: The function assigns new patient IDs to each image path.
+    """
+    images_path = [
+        "../Radiomic_Features_Extraction/data/image1_T2W_TSE_AX.nii",
+        "../Radiomic_Features_Extraction/data/image2_T2W_TSE_AX.nii",
+    ]
+
+    patient_ids = assign_patient_ids(images_path)
+
+    # Assert new patient IDs are assigned correctly
+    assert patient_ids == {1, 2}, f" Expected new patient IDs {1, 2}, but got {patient_ids} "
+
+
+def test_assign_patient_ids_mixed_existing_and_new_ids():
+    """
+    Test that the function handles a mix of image paths with existing and new patient IDs.
+
+    GIVEN: A list of image file paths, some with existing patient IDs and others without.
+    WHEN: The assign_patient_ids function is called.
+    THEN: The function correctly extracts existing IDs and assigns new IDs where necessary.
+    """
+    images_path = [
+        "../Radiomic_Features_Extraction/data/PR2/PR2_T2W_TSE_AX.nii",  # Existing ID
+        "../Radiomic_Features_Extraction/data/PR3/PR3_T2W_TSE_AX.nii",  # Existing ID
+        "../Radiomic_Features_Extraction/data/image4_T2W_TSE_AX.nii",  # New ID
+    ]
+
+    patient_ids = assign_patient_ids(images_path)
+
+    # Assert the correct patient IDs are assigned and extracted
+    assert patient_ids == {2, 3, 1}, f" Expected patient IDs {2, 3, 1}, but got {patient_ids} "
+
+
+def test_assign_patient_ids_invalid_id_format():
+    """
+    Test that the function handles invalid patient ID formats in image paths.
+
+    GIVEN: A list of image file paths with invalid or missing patient IDs.
+    WHEN: The assign_patient_ids function is called.
+    THEN: The function assigns new patient IDs to each image path.
+    """
+    images_path = [
+        "../Radiomic_Features_Extraction/data/PR_invalid/PR_T2W_TSE_AX.nii",  # Invalid ID format
+        "../Radiomic_Features_Extraction/data/PR_invalid/PR_T2W_TSE_AX.nii",  # Invalid ID format
+    ]
+
+    patient_ids = assign_patient_ids(images_path)
+
+    # Assert new patient IDs are assigned correctly
+    assert patient_ids == {1, 2}, f" Expected new patient IDs {1, 2}, but got {patient_ids} "

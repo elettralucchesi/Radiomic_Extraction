@@ -136,3 +136,45 @@ def new_patient_id(patients_id):
     while new_id in patients_id:
         new_id += 1
     return new_id
+
+
+def assign_patient_ids(images_path):
+    """
+    Assign patient IDs based on image file paths.
+
+    This function extracts patient IDs from file names using `extract_id()`. If no valid
+    ID is found, a new unique ID is generated using `new_patient_id()`. The function
+    ensures that each patient is assigned a unique identifier.
+
+    Parameters
+    ----------
+    images_path : list[str]
+        List of file paths to the image files.
+
+    Returns
+    -------
+    set[int]
+        Set of assigned patient IDs.
+
+    Raises
+    ------
+    TypeError
+        If `images_path` is not a list.
+    ValueError
+        If `images_path` is empty.
+    """
+    if not isinstance(images_path, list):
+        raise TypeError("images_path must be a list")
+
+    if not images_path:
+        raise ValueError("The list of image paths cannot be empty")
+
+    patient_ids = set()
+    for im_path in images_path:
+        patient_id = extract_id(im_path)
+        if patient_id is None:
+            patient_id = new_patient_id(patient_ids)
+            print(f"Patient ID not found, automatically assigning new ID, for {im_path} id {patient_id}")
+        patient_ids.add(patient_id)
+
+    return patient_ids
