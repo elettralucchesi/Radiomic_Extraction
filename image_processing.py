@@ -160,3 +160,51 @@ def get_slices_2D(image, mask, patient_id):
         })
 
     return patient_slices
+
+
+def get_volume_3D(image, mask, patient_id):
+    """
+    Extract a 3D volume of an image and its corresponding mask.
+
+    GIVEN
+    -----
+    image : sitk.Image
+        The 3D medical image.
+    mask : sitk.Image
+        The corresponding 3D segmentation mask.
+    patient_id : int
+        Unique identifier of the patient.
+
+    WHEN
+    ----
+    The function processes the full 3D volume.
+
+    THEN
+    ----
+    Returns a list containing a dictionary with:
+        - 'PatientID': Patient identifier.
+        - 'ImageVolume': The full 3D image.
+        - 'MaskVolume': The full 3D mask.
+
+    Raises
+    ------
+    TypeError
+        If `image` or `mask` is not a SimpleITK Image.
+    ValueError
+        If `patient_id` is not an integer.
+    """
+    
+    if not isinstance(image, sitk.Image):
+        raise TypeError(f"Expected 'image' to be a SimpleITK Image, but got {type(image)}.")
+
+    if not isinstance(mask, sitk.Image):
+        raise TypeError(f"Expected 'mask' to be a SimpleITK Image, but got {type(mask)}.")
+
+    if not isinstance(patient_id, int):
+        raise ValueError(f"Expected 'patient_id' to be a int, but got {type(patient_id)}.")
+
+    return [{
+        'PatientID': f"PR{patient_id}",
+        'ImageVolume': image,
+        'MaskVolume': mask
+    }]
