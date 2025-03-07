@@ -1,5 +1,6 @@
 import pytest
-from utils import get_path_images_masks
+import re
+from utils import *
 
 
 @pytest.fixture
@@ -154,3 +155,91 @@ def test_get_path_images_masks_multiple_masks_for_one_image(tmp_path):
 
     assert str(exc_info.value) == "The number of image files does not match the number of mask files", \
         f"Expected error message 'The number of image files does not match the number of mask files', but got: {str(exc_info.value)}"
+
+
+
+def test_extract_id_valid():
+    """
+    Test that the function correctly extracts the patient ID from a valid file path.
+
+    GIVEN: A file path with a patient ID.
+    WHEN: The extract_id function is called.
+    THEN: The function returns the correct patient ID.
+    """
+    valid_path = "/path/to/PR12345_image.nii"
+    result = extract_id(valid_path)
+    assert result == 12345, f"Expected patient ID: 12345, but got: {result}"
+
+def test_extract_id_invalid_format_with_pr():
+    """
+    GIVEN: A filename with an incorrectly formatted patient ID containing 'PR'.
+    WHEN: The extract_id function is called.
+    THEN: The function prints an error message and returns None.
+    """
+    result = extract_id('path/to/PR_2_image.nii')
+    assert result is None, f"Expected None, but got {result}"
+
+def test_extract_id_invalid_number_before_pr():
+    """
+    GIVEN: A filename where the number precedes 'PR' (e.g., '2PR').
+    WHEN: The extract_id function is called.
+    THEN: The function prints an error message and returns None.
+    """
+    result = extract_id('path/to/2PR_image.nii')
+    assert result is None, f"Expected None, but got {result}"
+
+def test_extract_id_no_pr():
+    """
+    GIVEN: A filename without a patient ID or 'PR' prefix.
+    WHEN: The extract_id function is called.
+    THEN: The function prints an error message and returns None.
+    """
+    result = extract_id('path/to/image_without_id.nii')
+    assert result is None, f"Expected None, but got {result}"
+
+
+def test_extract_id_multiple_pr_but_wrong_format():
+    """
+    GIVEN: A filename containing multiple 'PR' but in an incorrect format.
+    WHEN: The extract_id function is called.
+    THEN: The function prints an error message and returns None.
+    """
+    result = extract_id('path/to/PRabc_PR123X_image.nii')
+    assert result is None, f"Expected None, but got {result}"
+
+
+def test_extract_id_no_pr_prefix():
+    """
+    GIVEN: A filename where the ID is present but lacks the 'PR' prefix.
+    WHEN: The extract_id function is called.
+    THEN: The function prints an error message and returns None.
+    """
+    result = extract_id('path/to/12345_image.nii')
+    assert result is None, f"Expected None, but got {result}"
+
+def test_extract_id_non_string_path():
+    """
+    GIVEN: A non-string input as path.
+    WHEN: The extract_id function is called.
+    THEN: The function raises a TypeError.
+    """
+    with pytest.raises(TypeError, match="Path must be a string"):
+        extract_id(12345)
+
+def test_extract_id_none_input():
+    """
+    GIVEN: A None input.
+    WHEN: The extract_id function is called.
+    THEN: The function raises a TypeError.
+    """
+    with pytest.raises(TypeError, match="Path must be a string"):
+        extract_id(None)
+
+def test_extract_id_multiple_valid_pr():
+    """
+    GIVEN: A filename with multiple valid 'PR<number>' occurrences.
+    WHEN: The extract_id function is called.
+    THEN: The function returns only the first valid patient ID.
+    """
+    result = extract_id('path/to/PR12_PR34_image.nii')
+    assert result == 12, f"Expected 12, but got {result}"

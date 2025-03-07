@@ -1,5 +1,6 @@
 import os
 import glob
+import re 
 
 
 def get_path_images_masks(path):
@@ -47,3 +48,52 @@ def get_path_images_masks(path):
         raise ValueError("The number of image files does not match the number of mask files")
 
     return img, mask
+
+
+def extract_id(path):
+    """
+    Extract the patient ID from the file name.
+
+    This function retrieves the patient ID from a given file path by searching for
+    occurrences of the pattern 'PR<number>' in the file name. If multiple IDs are found,
+    only the first occurrence is used. If the format is incorrect or no ID is found,
+    a warning message is printed, and `None` is returned.
+
+    Parameters
+    ----------
+    path : str
+        Path to the image file.
+
+    Returns
+    -------
+    int or None
+        The extracted patient ID as an integer if found and correctly formatted;
+        otherwise, `None`.
+
+    Raises
+    ------
+    TypeError
+        If `path` is not a string.
+    """
+    if path is None or not isinstance(path, str):
+        raise TypeError("Path must be a string")
+
+    filename = os.path.basename(path)
+    matches = re.findall(r'\bPR(\d+)', filename)  # Find all occurrences of "PR<number>"
+
+    if matches:
+        if len(matches) > 1:
+            print(f"Multiple patient IDs found in '{filename}'. The first occurrence ('PR{matches[0]}') will be used.")
+        return int(matches[0])  # Use the first valid match
+
+    if "PR" in filename:  # If "PR" exists but format is incorrect
+        print(
+            f"Invalid patient ID format in file name '{filename}'. Expected 'PR<number>', e.g., 'PR2'. The ID will be automatically assigned."
+        )
+        return None
+    else:
+        print(
+            f"No valid patient ID found in file name '{filename}'. Expected format: 'PR<number>', e.g., 'PR2'. The ID will be automatically assigned."
+        )
+
+    return None
