@@ -97,3 +97,42 @@ def extract_id(path):
         )
 
     return None
+
+def new_patient_id(patients_id):
+    """
+    Generate a new unique patient ID.
+
+    This function finds the first available positive integer that is not already
+    present in the given set of patient IDs, ensuring uniqueness.
+
+    Parameters
+    ----------
+    patients_id : set[int]
+        Set of existing patient IDs.
+
+    Returns
+    -------
+    int
+        A new unique patient ID.
+
+    Raises
+    ------
+    TypeError
+        If `patients_id` is not a set.
+    ValueError
+        If any element in `patients_id` is not an integer.
+        If any patient ID is negative.
+    """
+    if not isinstance(patients_id, set):
+        raise TypeError("patients_id must be a set")
+
+    if any(not isinstance(i, int) for i in patients_id):
+        raise ValueError("All patient IDs must be integers")
+
+    if any(i < 0 for i in patients_id):
+        raise ValueError("Patient IDs cannot be negative")
+
+    new_id = 1
+    while new_id in patients_id:
+        new_id += 1
+    return new_id

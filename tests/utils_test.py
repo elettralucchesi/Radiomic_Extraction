@@ -243,3 +243,112 @@ def test_extract_id_multiple_valid_pr():
     """
     result = extract_id('path/to/PR12_PR34_image.nii')
     assert result == 12, f"Expected 12, but got {result}"
+
+
+
+
+def test_new_patient_id_empty_set():
+    """
+    Test that the function returns 1 when the set of patient IDs is empty.
+
+    GIVEN: An empty set of patient IDs.
+    WHEN: The new_patient_id function is called.
+    THEN: The function returns 1.
+    """
+    result = new_patient_id(set())
+    assert result == 1, f"Expected new ID: 1, but got: {result}"
+
+
+def test_new_patient_id_sequential():
+    """
+    Test that the function correctly assigns the next available patient ID when IDs are sequential.
+
+    GIVEN: A set of patient IDs {1, 2, 3, 4, 5}.
+    WHEN: The new_patient_id function is called.
+    THEN: The function returns 6.
+    """
+    existing_ids = {1, 2, 3, 4, 5}
+    result = new_patient_id(existing_ids)
+    assert result == 6, f"Expected new ID: 6, but got: {result}"
+
+def test_new_patient_id_missing_numbers():
+    """
+    Test that the function assigns the lowest available patient ID when there are missing numbers.
+
+    GIVEN: A set of patient IDs {2, 3, 5}.
+    WHEN: The new_patient_id function is called.
+    THEN: The function returns 1 as the first available ID.
+    """
+    existing_ids = {1, 2, 3, 5}
+    result = new_patient_id(existing_ids)
+    assert result == 4, f"Expected new ID: 4, but got: {result}"
+
+
+def test_new_patient_id_large_numbers():
+    """
+    Test that the function correctly assigns 1 if the existing IDs are all large numbers.
+
+    GIVEN: A set of patient IDs {100, 101, 102}.
+    WHEN: The new_patient_id function is called.
+    THEN: The function returns 1.
+    """
+    existing_ids = {100, 101, 102}
+    result = new_patient_id(existing_ids)
+    assert result == 1, f"Expected new ID: 1, but got: {result}"
+
+def test_new_patient_id_invalid_type_list():
+    """
+    Test that the function raises a TypeError if the input is a list instead of a set.
+
+    GIVEN: A list of patient IDs instead of a set.
+    WHEN: The new_patient_id function is called.
+    THEN: The function raises a TypeError.
+    """
+    with pytest.raises(TypeError, match="patients_id must be a set"):
+        new_patient_id([1, 2, 3])  # List instead of set
+
+
+def test_new_patient_id_invalid_type_string():
+    """
+    Test that the function raises a TypeError if the input is a string instead of a set.
+
+    GIVEN: A string instead of a set.
+    WHEN: The new_patient_id function is called.
+    THEN: The function raises a TypeError.
+    """
+    with pytest.raises(TypeError, match="patients_id must be a set"):
+        new_patient_id("123")  # String instead of set
+
+def test_new_patient_id_non_integer_values_string():
+    """
+    Test that the function raises a ValueError if the set contains a string instead of integers.
+
+    GIVEN: A set containing a string value.
+    WHEN: The new_patient_id function is called.
+    THEN: The function raises a ValueError.
+    """
+    with pytest.raises(ValueError, match="All patient IDs must be integers"):
+        new_patient_id({1, 2, "three"})  # Contains a string
+
+def test_new_patient_id_non_integer_values_float():
+    """
+    Test that the function raises a ValueError if the set contains a float instead of integers.
+
+    GIVEN: A set containing a float value.
+    WHEN: The new_patient_id function is called.
+    THEN: The function raises a ValueError.
+    """
+    with pytest.raises(ValueError, match="All patient IDs must be integers"):
+        new_patient_id({1, 2, 3.5})  # Contains a float
+
+def test_new_patient_id_negative_values():
+    """
+    Test that the function raises a ValueError when the set contains negative patient IDs.
+
+    GIVEN: A set containing negative patient IDs.
+    WHEN: The new_patient_id function is called.
+    THEN: The function raises a ValueError with an appropriate message.
+    """
+    existing_ids = {1, -2, 3, -1}
+    with pytest.raises(ValueError, match="Patient IDs cannot be negative"):
+        new_patient_id(existing_ids)
