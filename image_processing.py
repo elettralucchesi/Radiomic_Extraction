@@ -1,4 +1,5 @@
 from scipy.ndimage import label
+import SimpleITK as sitk
 import numpy as np
 
 def extract_largest_region(mask_slice, label_value):
@@ -92,3 +93,70 @@ def process_slice(mask_slice):
     # If no region found
     return None, None
 
+
+def get_slices_2D(image, mask, patient_id):
+    """
+    Extract 2D slices of an image and its corresponding mask.
+
+    GIVEN
+    -----
+    image : sitk.Image
+        The 3D medical image.
+    mask : sitk.Image
+        The corresponding 3D segmentation mask.
+    patient_id : int
+        Unique identifier of the patient.
+
+    WHEN
+    ----
+    The function processes each slice of the mask.
+
+    THEN
+    ----
+    Returns a list of dictionaries, each containing:
+        - 'PatientID': Patient identifier.
+        - 'Label': Extracted region label.
+        - 'SliceIndex': Slice index in the volume.
+        - 'ImageSlice': Image slice in SimpleITK format.
+        - 'MaskSlice': Mask slice in SimpleITK format.
+
+    Raises
+    ------
+    TypeError
+        If `image` or `mask` is not a SimpleITK Image.
+    ValueError
+        If `patient_id` is not an integer.
+    """
+
+    if not isinstance(image, sitk.Image):
+        raise TypeError(f"Expected 'image' to be a SimpleITK Image, but got {type(image)}.")
+
+    if not isinstance(mask, sitk.Image):
+        raise TypeError(f"Expected 'mask' to be a SimpleITK Image, but got {type(mask)}.")
+
+    if not isinstance(patient_id, int):
+        raise ValueError(f"Expected 'patient_id' to be a int, but got {type(patient_id)}.")
+
+    image_array = sitk.GetArrayFromImage(image)
+    mask_array = sitk.GetArrayFromImage(mask)
+    patient_slices = []
+
+    for slice_idx in range(mask_array.shape[0]):
+        mask_slice = mask_array[slice_idx, :, :]
+        image_slice = image_array[slice_idx, :, :]
+
+        region_mask, region_label = process_slice(mask_slice)
+        if region_mask is None:
+            continue
+
+        largest_region_mask_image  = sitk.GetImageFromArray(region_mask)
+        image_slice_image = sitk.GetImageFromArray(image_slice)
+        patient_slices.append({
+            'PatientID': f"PR{patient_id}",
+            'Label': region_label,
+            'SliceIndex': slice_idx,
+            'ImageSlice':  image_slice_image,
+            'MaskSlice': largest_region_mask_image
+        })
+
+    return patient_slices
