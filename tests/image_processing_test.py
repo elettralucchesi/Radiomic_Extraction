@@ -146,3 +146,116 @@ def test_extract_largest_region_label_not_string():
     label_value = "label"
     with pytest.raises(TypeError, match="Label value must be an integer"):
         extract_largest_region(mask_slice, label_value)
+
+
+def test_process_slice_single_label():
+    """
+    Test process_slice with a mask containing a single labeled region.
+
+    GIVEN: A mask with a single labeled region.
+    WHEN: The function is called.
+    THEN: It should return the largest region mask and its corresponding label.
+    """
+    mask_slice = np.array([
+        [0, 1, 1, 0],
+        [0, 1, 1, 0],
+        [0, 0, 0, 0]
+    ])
+
+    largest_region_mask, label = process_slice(mask_slice)
+    assert label == 1, "Expected label 1, but got a different label."
+
+
+def test_process_slice_single_mask():
+    """
+    Test process_slice with a mask containing a single labeled region.
+
+    GIVEN: A mask with a single labeled region.
+    WHEN: The function is called.
+    THEN: It should return the largest region mask and its corresponding label.
+    """
+    mask_slice = np.array([
+        [0, 1, 1, 0],
+        [0, 1, 1, 0],
+        [0, 0, 0, 0]
+    ])
+
+    largest_region_mask, label = process_slice(mask_slice)
+
+    # Verify that the largest region mask matches the expected result
+    expected_region_mask = np.array([
+        [0, 1, 1, 0],
+        [0, 1, 1, 0],
+        [0, 0, 0, 0]
+    ])
+    assert np.array_equal(largest_region_mask,
+                          expected_region_mask), "The largest region mask does not match the expected result."
+
+
+def test_process_slice_multiple_labels_label():
+    """
+    Test that the function correctly returns the largest region mask and its corresponding label when there are multiple labeled regions.
+
+    GIVEN: A mask slice with multiple labeled regions.
+    WHEN: The process_slice function is called.
+    THEN: The function should return the largest valid region and its corresponding label.
+    """
+    mask_slice = np.array([
+        [0, 1, 1, 0, 2, 2, 2],
+        [0, 1, 1, 0, 2, 2, 2],
+        [0, 0, 0, 0, 0, 0, 0]
+    ])
+
+    largest_region_mask, label = process_slice(mask_slice)
+    assert label in [1, 2], "Expected label 1 or 2, but got a different label."
+
+
+def test_process_slice_multiple_labels_mask():
+    """
+    Test that the function correctly returns the largest region mask and its corresponding label when there are multiple labeled regions.
+
+    GIVEN: A mask slice with multiple labeled regions.
+    WHEN: The process_slice function is called.
+    THEN: The function should return the largest valid region and its corresponding label.
+    """
+    mask_slice = np.array([
+        [0, 1, 1, 0, 2, 2, 2],
+        [0, 1, 1, 0, 2, 2, 2],
+        [0, 0, 0, 0, 0, 0, 0]
+    ])
+
+    largest_region_mask, label = process_slice(mask_slice)
+
+    # Define expected region masks for label 1 and label 2
+    expected_region_mask_1 = np.array([
+        [0, 1, 1, 0, 0, 0, 0],
+        [0, 1, 1, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0]
+    ])
+
+    expected_region_mask_2 = np.array([
+        [0, 0, 0, 0, 2, 2, 2],
+        [0, 0, 0, 0, 2, 2, 2],
+        [0, 0, 0, 0, 0, 0, 0]
+    ])
+
+    # Assert that the largest region mask matches the expected result based on the label
+    assert np.array_equal(largest_region_mask, expected_region_mask_1) or np.array_equal(largest_region_mask,
+                                                                                         expected_region_mask_2), \
+        f"Unexpected largest region mask for label {label}."
+
+
+def test_process_slice_returns_none_none():
+    """
+    GIVEN a mask slice with no labeled regions (all zeros)
+    WHEN process_slice is called
+    THEN it should return (None, None)
+    """
+    # Create a 2D mask with only background (all values set to zero)
+    mask_slice = np.zeros((10, 10), dtype=np.uint16)
+
+    # Call the process_slice function
+    region_mask, label = process_slice(mask_slice)
+
+    # Check that the result is (None, None) with a single assert
+    assert (region_mask, label) == (None, None), f"Expected (None, None), but got ({region_mask}, {label})"

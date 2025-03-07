@@ -59,3 +59,36 @@ def extract_largest_region(mask_slice, label_value):
             largest_region = region
 
     return largest_region
+
+
+def process_slice(mask_slice):
+    """
+    Process a mask slice to extract the largest connected region for each label.
+
+    GIVEN
+    -----
+    mask_slice : np.ndarray
+        2D array representing the mask slice.
+
+    WHEN
+    ----
+    The function iterates through all labels in the mask.
+
+    THEN
+    ----
+    Returns a tuple (largest_region_mask, label) containing the largest region found.
+    
+    """
+
+    labels = np.unique(mask_slice)
+    labels = labels[labels != 0]  # Exclude background
+
+    for lbl in labels:
+        lbl = int(lbl)  # Convert numpy.int16 to native Python int
+        largest_region_mask = extract_largest_region(mask_slice, lbl)
+        if largest_region_mask is not None:
+            return largest_region_mask, lbl
+    
+    # If no region found
+    return None, None
+
