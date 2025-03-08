@@ -1,0 +1,24 @@
+# This i a configuration file for a comprehensive radiomic feature extration 
+# form a 3D volume. The extraction includes the whole set of texture features, 
+# first order features and shape features. 
+# It also includes feature extracted from the Original Image and the one transformed using 
+# the wavelet transform and the laplacian of gaussian.
+
+
+imageType:
+        Original: {}
+        LoG: {'sigma': [.5, 1., 1.5, 2.]}
+        Wavelet: 
+                binWidth: 10
+featureClass:
+        glcm:
+        glrlm:
+        glszm:
+        gldm:
+        ngtdm:
+        firstorder:
+        shape:
+setting:
+  normalize: True
+  label: 2 # set to 3 to select only the WM region
+  geometryTolerance: 6e-5
