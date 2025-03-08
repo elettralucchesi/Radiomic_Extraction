@@ -297,3 +297,55 @@ def test_radiomic_extractor_2D_valid_input_feature2():
 
     # Check that the result contains the correct value for Feature2
     assert result["123-0-1"]["Feature2"] == 0.8
+
+
+# Dummy extractor for testing purposes
+class DummyExtractor:
+    def execute(self, patient_dict):
+        return {"feature1": 1.0, "feature2": 2.0}
+
+
+def test_extract_radiomic_features_patient_dict_not_dict():
+    """
+    Testing that a TypeError is raised when patient_dict is not a dictionary
+
+    GIVEN patient_dict is not a dictionary
+    WHEN calling extract_radiomic_features
+    THEN it should raise a TypeError with the message 'patient_dict must be a dictionary.'
+    """
+    patient_dict = ["invalid_patient_data"]
+    extractor = DummyExtractor()
+    with pytest.raises(TypeError, match="patient_dict must be a dictionary."):
+        extract_radiomic_features(patient_dict, extractor, mode="3D")
+
+
+def test_extract_radiomic_features_invalid_mode():
+    """
+    Testing that a ValueError is raised when an invalid mode is provided
+
+    GIVEN an invalid mode (not '2D' or '3D')
+    WHEN calling extract_radiomic_features
+    THEN it should raise a ValueError with the message 'Invalid mode. Choose either '2D' or '3D'.'
+    """
+    patient_dict = {"patient_id": 1, "image_data": "some_data"}
+    extractor = DummyExtractor()
+    with pytest.raises(ValueError, match="Invalid mode. Choose either '2D' or '3D'."):
+        extract_radiomic_features(patient_dict, extractor, mode="invalid_mode")
+
+
+def test_extract_radiomic_features_extractor_not_configured():
+    """
+    Testing that a ValueError is raised when the extractor is not configured properly
+
+    GIVEN the extractor is not configured properly (lacking 'execute' method)
+    WHEN calling extract_radiomic_features
+    THEN it should raise a ValueError with the message 'Extractor is not configured properly. Ensure it has the necessary methods.'
+    """
+
+    class UnconfiguredExtractor:
+        pass
+
+    patient_dict = {"patient_id": 1, "image_data": "some_data"}
+    extractor = UnconfiguredExtractor()
+    with pytest.raises(ValueError, match="Extractor is not configured properly. Ensure it has the necessary methods."):
+        extract_radiomic_features(patient_dict, extractor, mode="3D")

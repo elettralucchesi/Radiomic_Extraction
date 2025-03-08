@@ -152,3 +152,45 @@ def radiomic_extractor_2D(patient_dict_2D, extractor):
             except Exception as e:
                 logging.error(f"[Invalid Feature] for patient {patient_id}, Slice {index}, Label {lbl}: {e}")
     return all_features_2D
+
+
+def extract_radiomic_features(patient_dict, extractor, mode="3D"):
+    """
+    Extract radiomic features from medical images in either 2D or 3D mode.
+
+    GIVEN
+    -----
+    patient_dict : dict
+        Dictionary containing patient data.
+    extractor : RadiomicsFeatureExtractor
+        Configured feature extractor.
+    mode : str
+        Processing mode, either "2D" or "3D". Defaults to "3D".
+
+    WHEN
+    ----
+    The function processes the patient dictionary based on the specified mode.
+
+    THEN
+    ----
+    Returns a dictionary with extracted radiomic features.
+
+    Raises
+    ------
+    TypeError
+        If `patient_dict` is not a dictionary.
+    ValueError
+        If `mode` is not "2D" or "3D".
+        If `extractor` is not properly configured.
+    """
+    if not isinstance(patient_dict, dict):
+        raise TypeError("patient_dict must be a dictionary.")
+    if mode not in ["2D", "3D"]:
+        raise ValueError("Invalid mode. Choose either '2D' or '3D'.")
+    if not hasattr(extractor, 'execute'):
+        raise ValueError("Extractor is not configured properly. Ensure it has the necessary methods.")
+
+    if mode == "3D":
+        return radiomic_extractor_3D(patient_dict, extractor)
+    else:
+        return radiomic_extractor_2D(patient_dict, extractor)
