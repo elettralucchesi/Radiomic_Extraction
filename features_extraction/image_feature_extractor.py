@@ -101,3 +101,54 @@ def radiomic_extractor_3D(patient_dict_3D, extractor):
 
     return all_features_3D
 
+
+
+def radiomic_extractor_2D(patient_dict_2D, extractor):
+    """
+    Extract radiomic features from 2D medical image slices.
+
+    GIVEN
+    -----
+    patient_dict_2D : dict
+        Dictionary containing patient 2D slices.
+    extractor : RadiomicsFeatureExtractor
+        Configured feature extractor.
+
+    WHEN
+    ----
+    The function iterates through each patient slice, extracting features from labeled mask regions.
+
+    THEN
+    ----
+    Returns a dictionary containing extracted features for each patient slice and label.
+
+    Raises
+    ------
+    ValueError
+        If no labels are found in the mask for a given patient slice.
+    """
+
+    all_features_2D = {}
+
+    for patient_id, patient_slices in patient_dict_2D.items():
+        for slice_data in patient_slices:
+            lbl = slice_data["Label"]
+            index = slice_data["SliceIndex"]
+
+            if lbl == 0:
+                raise ValueError(f"No labels found in mask for patient {patient_id}")
+
+            try:
+                img_slice = slice_data["ImageSlice"]
+                mask_slice = slice_data["MaskSlice"]
+
+                features = extractor.execute(img_slice, mask_slice, label=int(lbl))
+
+                features = {"MaskLabel": lbl, "SliceIndex": index, "PatientID": patient_id, **features}
+                key = f"{patient_id}-{index}-{lbl}"
+                all_features_2D[key] = features
+                # Debug log to check if the key is being added
+                logging.debug(f"Added features for {key}: {features}")
+            except Exception as e:
+                logging.error(f"[Invalid Feature] for patient {patient_id}, Slice {index}, Label {lbl}: {e}")
+    return all_features_2D
