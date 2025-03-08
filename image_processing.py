@@ -256,3 +256,58 @@ def read_image_and_mask(image_path, mask_path):
         raise ValueError("Image and mask dimensions do not match.")
 
     return img, mask
+
+
+def get_patient_image_mask_dict(imgs_path, masks_path, patient_ids, mode):
+    """
+    Create a dictionary mapping patient IDs to image-mask data.
+
+    GIVEN
+    -----
+    imgs_path : list[str]
+        List of file paths to image files.
+    masks_path : list[str]
+        List of file paths to mask files.
+    patient_ids : list[int]
+        List of patient IDs.
+    mode : str
+        Either '2D' or '3D' to determine processing type.
+
+    WHEN
+    ----
+    The function processes each patient's image-mask pair.
+
+    THEN
+    ----
+    Returns a dictionary where each key is a patient ID and the value is:
+        - A list of 2D slices (if mode="2D").
+        - A list with a single 3D volume (if mode="3D").
+
+    Raises
+    ------
+    ValueError
+        If `patient_ids` is empty.
+        If `imgs_path`, `masks_path`, and `patient_ids` have different lengths.
+        If `mode` is not '2D' or '3D'.
+    """
+    if len(patient_ids) == 0:
+        raise ValueError("The patient_ids list cannot be empty.")
+
+    if len(imgs_path) != len(masks_path) or len(imgs_path) != len(patient_ids):
+        raise ValueError("The number of images, masks, and patient_ids must be the same.")
+
+    patient_dict = {}
+
+    for pr_id, img_path, mask_path in zip(patient_ids, imgs_path, masks_path):
+        img, mask = read_image_and_mask(img_path, mask_path)
+
+        if mode == "2D":
+            patient_slices = get_slices_2D(img, mask, pr_id)
+            patient_dict[pr_id] = patient_slices
+        elif mode == "3D":
+            patient_volume = get_volume_3D(img, mask, pr_id)
+            patient_dict[pr_id] = patient_volume
+        else:
+            raise ValueError("Mode should be '2D' or '3D'")
+
+    return patient_dict

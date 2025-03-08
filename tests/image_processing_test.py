@@ -540,3 +540,53 @@ def test_read_image_and_mask_dimension_mismatch(mock_read_image_and_mask_differe
 
     with pytest.raises(ValueError, match="Image and mask dimensions do not match."):
         read_image_and_mask("image.nii", "mask.nii")
+
+
+
+
+def test_get_patient_image_mask_dict_empty_patient_ids():
+    """
+    GIVEN: An empty list for patient_ids.
+    WHEN: The get_patient_image_mask_dict function is called.
+    THEN: It should raise a ValueError indicating that the patient_ids list cannot be empty.
+    """
+    imgs_path = ["img1.nii", "img2.nii"]
+    masks_path = ["mask1.nii", "mask2.nii"]
+    patient_ids = []  # Empty patient_ids list
+    mode = "3D"
+
+    with pytest.raises(ValueError, match="The patient_ids list cannot be empty."):
+        get_patient_image_mask_dict(imgs_path, masks_path, patient_ids, mode)
+
+
+def test_get_patient_image_mask_dict_images_masks_and_patient_ids_count():
+    """
+    GIVEN: Lists of image paths, mask paths, and patient ids with unequal lengths.
+    WHEN: The get_patient_image_mask_dict function is called.
+    THEN: It should raise a ValueError indicating that all lists must have the same length.
+    """
+    imgs_path = ["img1.nii", "img2.nii"]
+    masks_path = ["mask1.nii"]
+    patient_ids = [1, 2]
+    mode = "3D"
+
+    with pytest.raises(ValueError, match="The number of images, masks, and patient_ids must be the same."):
+        get_patient_image_mask_dict(imgs_path, masks_path, patient_ids, mode)
+
+
+@patch('image_processing.read_image_and_mask')
+def test_get_patient_image_mask_dict_invalid_mode(mock_read_image):
+    """
+    GIVEN: A mode that is not '2D' or '3D'.
+    WHEN: The get_patient_image_mask_dict function is called.
+    THEN: It should raise a ValueError indicating that only '2D' and '3D' modes are allowed.
+    """
+    mock_read_image.return_value = (None, None)  # Mock return value
+
+    imgs_path = ["img1.nii", "img2.nii"]
+    masks_path = ["mask1.nii", "mask2.nii"]
+    patient_ids = [1, 2]
+    mode = "4D"  # Invalid mode
+
+    with pytest.raises(ValueError, match="Mode should be '2D' or '3D'"):
+        get_patient_image_mask_dict(imgs_path, masks_path, patient_ids, mode)
