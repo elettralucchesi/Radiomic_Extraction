@@ -1,6 +1,6 @@
 import pytest
 import re
-from utils import *
+from features_extraction.utils import *
 
 
 @pytest.fixture

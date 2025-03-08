@@ -1,6 +1,7 @@
 import pytest
 from unittest.mock import patch
-from image_processing import *
+from features_extraction.image_processing import *
+from features_extraction.utils import *
 
 
 def test_extract_largest_region_correct():
@@ -429,7 +430,7 @@ def test_get_slices_2D_skip_slice_on_none():
     patient_id = 123
 
     # Mock the process_slice function to return (None, None) for the first two slices and valid results for the last slice
-    with patch('image_processing.process_slice', side_effect=[(None, None), (None, None), (np.ones((10, 10)), 1)]):
+    with patch('features_extraction.image_processing.process_slice', side_effect=[(None, None), (None, None), (np.ones((10, 10)), 1)]):
         result = get_slices_2D(img, mask, patient_id)
 
     # Assert that the result contains only one slice (the third slice where the region was found)
@@ -529,7 +530,7 @@ def mock_read_image_and_mask_different_size():
     return _mock
 
 
-def test_read_image_and_mask_dimension_mismatch(mock_read_image_and_mask_different_size, monkeypatch):
+def test_read_image_and_mask_dimension_mismatch(mock_read_image_and_mask_different_size, monkeypatch: pytest.MonkeyPatch):
     """
     GIVEN: An image and a mask with different dimensions.
     WHEN: The function is called.
@@ -574,7 +575,7 @@ def test_get_patient_image_mask_dict_images_masks_and_patient_ids_count():
         get_patient_image_mask_dict(imgs_path, masks_path, patient_ids, mode)
 
 
-@patch('image_processing.read_image_and_mask')
+@patch('features_extraction.image_processing.read_image_and_mask')
 def test_get_patient_image_mask_dict_invalid_mode(mock_read_image):
     """
     GIVEN: A mode that is not '2D' or '3D'.
