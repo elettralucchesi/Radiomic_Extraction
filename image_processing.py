@@ -1,5 +1,6 @@
 from scipy.ndimage import label
 import SimpleITK as sitk
+import os
 import numpy as np
 
 def extract_largest_region(mask_slice, label_value):
@@ -208,3 +209,50 @@ def get_volume_3D(image, mask, patient_id):
         'ImageVolume': image,
         'MaskVolume': mask
     }]
+ 
+ 
+def read_image_and_mask(image_path, mask_path):
+    """
+    Read an image and its corresponding mask using SimpleITK.
+
+    GIVEN
+    -----
+    image_path : str
+        Path to the image file.
+    mask_path : str
+        Path to the mask file.
+
+    WHEN
+    ----
+    The function reads the image and mask from disk.
+
+    THEN
+    ----
+    Returns a tuple containing the image and mask as SimpleITK images.
+
+    Raises
+    ------
+    ValueError
+        If any input path is empty.
+        If the parent directories of the image and mask do not match.
+        If the image and mask dimensions do not match.
+    TypeError
+        If input paths are not strings.
+    """
+
+    if not image_path or not mask_path:
+        raise ValueError("Image and mask paths cannot be empty.")
+
+    if not isinstance(image_path, str) or not isinstance(mask_path, str):
+        raise TypeError("Image and mask paths must be strings.")
+
+    if os.path.dirname(image_path) != os.path.dirname(mask_path):
+        raise ValueError("Image and mask must be in the same directory.")
+
+    img = sitk.ReadImage(image_path)
+    mask = sitk.ReadImage(mask_path)
+
+    if img.GetSize() != mask.GetSize():
+        raise ValueError("Image and mask dimensions do not match.")
+
+    return img, mask

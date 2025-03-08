@@ -451,18 +451,6 @@ def test_get_volume_3D_return_type():
 
     assert isinstance(result, list), f"Expected result to be a list, but got {type(result)}."
 
-def test_get_volume_3D_invalid_image_type():
-    """
-    GIVEN: A non-SimpleITK image (e.g., a numpy array).
-    WHEN: The get_volume_3D function is called.
-    THEN: The function should raise a TypeError indicating that the image is not of type SimpleITK.Image.
-    """
-    invalid_image = np.array([[1, 2], [3, 4]])
-    mask_3d = sitk.Image(3, 3, 3, sitk.sitkUInt8)
-    patient_id = 1234
-
-    with pytest.raises(TypeError, match="Expected 'image' to be a SimpleITK Image"):
-        get_volume_3D(invalid_image, mask_3d, patient_id)
 
 def test_get_volume_3D_invalid_image_type():
     """
@@ -476,6 +464,21 @@ def test_get_volume_3D_invalid_image_type():
 
     with pytest.raises(TypeError, match="Expected 'image' to be a SimpleITK Image"):
         get_volume_3D(invalid_image, mask_3d, patient_id)
+
+
+def test_get_volume_3D_invalid_image_type():
+    """
+    GIVEN: A non-SimpleITK image (e.g., a numpy array).
+    WHEN: The get_volume_3D function is called.
+    THEN: The function should raise a TypeError indicating that the image is not of type SimpleITK.Image.
+    """
+    invalid_image = np.array([[1, 2], [3, 4]])
+    mask_3d = sitk.Image(3, 3, 3, sitk.sitkUInt8)
+    patient_id = 1234
+
+    with pytest.raises(TypeError, match="Expected 'image' to be a SimpleITK Image"):
+        get_volume_3D(invalid_image, mask_3d, patient_id)
+
 
 def test_get_volume_3D_invalid_patient_id():
     """
@@ -489,3 +492,51 @@ def test_get_volume_3D_invalid_patient_id():
 
     with pytest.raises(ValueError, match="Expected 'patient_id' to be a int"):
         get_volume_3D(image_3d, mask_3d, patient_id)
+
+
+def test_read_image_and_mask_empty_path():
+    """
+    GIVEN: Empty paths for the image and mask.
+    WHEN: The function is called.
+    THEN: A ValueError should be raised.
+    """
+    with pytest.raises(ValueError, match="Image and mask paths cannot be empty."):
+        read_image_and_mask("", "")
+
+
+def test_read_image_and_mask_non_string_path():
+    """
+    GIVEN: Non-string paths for the image and mask.
+    WHEN: The function is called.
+    THEN: A TypeError should be raised.
+    """
+    with pytest.raises(TypeError, match="Image and mask paths must be strings."):
+        read_image_and_mask(123, 456)
+
+
+@pytest.fixture
+def mock_read_image_and_mask_different_size():
+    """
+    GIVEN: A mocked function that returns an image and a mask with different dimensions.
+    WHEN: It is used in place of the actual function.
+    THEN: The returned image and mask will have mismatched dimensions.
+    """
+    def _mock(img_path, mask_path):
+        img = sitk.Image(3, 3, 3, sitk.sitkUInt8)  # 3x3x3 image
+        mask = sitk.Image(4, 4, 4, sitk.sitkUInt8)  # 4x4x4 mask (different size)
+        return img, mask
+
+    return _mock
+
+
+def test_read_image_and_mask_dimension_mismatch(mock_read_image_and_mask_different_size, monkeypatch):
+    """
+    GIVEN: An image and a mask with different dimensions.
+    WHEN: The function is called.
+    THEN: A ValueError should be raised.
+    """
+    monkeypatch.setattr("SimpleITK.ReadImage",
+                        lambda path: mock_read_image_and_mask_different_size(path, path)[0 if "image" in path else 1])
+
+    with pytest.raises(ValueError, match="Image and mask dimensions do not match."):
+        read_image_and_mask("image.nii", "mask.nii")
