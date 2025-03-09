@@ -202,16 +202,16 @@ def extract_radiomic_features(patient_dict, extractor, mode="3D"):
     ------
     TypeError
         If `patient_dict` is not a dictionary.
+        If `extractor` is not an instance of `RadiomicsFeatureExtractor`.
     ValueError
         If `mode` is not "2D" or "3D".
-        If `extractor` is not properly configured.
     """
     if not isinstance(patient_dict, dict):
         raise TypeError("patient_dict must be a dictionary.")
     if mode not in ["2D", "3D"]:
         raise ValueError("Invalid mode. Choose either '2D' or '3D'.")
-    if not hasattr(extractor, 'execute'):
-        raise ValueError("Extractor is not configured properly. Ensure it has the necessary methods.")
+    if not isinstance(extractor, featureextractor.RadiomicsFeatureExtractor):
+        raise TypeError("extractor must be an instance of RadiomicsFeatureExtractor.")
 
     if mode == "3D":
         return radiomic_extractor_3D(patient_dict, extractor)
