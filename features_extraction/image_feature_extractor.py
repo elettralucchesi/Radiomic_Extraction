@@ -133,11 +133,26 @@ def radiomic_extractor_2D(patient_dict_2D, extractor):
 
     Raises
     ------
+    TypeError
+        If `patient_dict_2D` is not a dictionary.
+        If `extractor` is not an instance of `RadiomicsFeatureExtractor`.
     ValueError
-        If no labels are found in the mask for a given patient slice.
+        If `patient_dict_2D` is empty
+        If no labels are found in the mask for a given patient.
     """
+    
+    if not isinstance(patient_dict_2D, dict):
+        raise TypeError("patient_dict_2D must be a dictionary.")
+
+    if not isinstance(extractor, featureextractor.RadiomicsFeatureExtractor):
+        raise TypeError("extractor must be an instance of RadiomicsFeatureExtractor.")
+
+    if not patient_dict_2D:
+        raise ValueError("patient_dict_2D cannot be empty.")
+
 
     all_features_2D = {}
+    errors = []
 
     for patient_id, patient_slices in patient_dict_2D.items():
         for slice_data in patient_slices:
@@ -156,10 +171,9 @@ def radiomic_extractor_2D(patient_dict_2D, extractor):
                 features = {"MaskLabel": lbl, "SliceIndex": index, "PatientID": patient_id, **features}
                 key = f"{patient_id}-{index}-{lbl}"
                 all_features_2D[key] = features
-                # Debug log to check if the key is being added
-                logging.debug(f"Added features for {key}: {features}")
             except Exception as e:
-                logging.error(f"[Invalid Feature] for patient {patient_id}, Slice {index}, Label {lbl}: {e}")
+                errors.append(f"Invalid Feature for patient PR{patient_id}, label {lbl}: {e}")
+                print(f"Invalid Feature for patient PR{patient_id}, label {lbl}: {e}")  
     return all_features_2D
 
 
