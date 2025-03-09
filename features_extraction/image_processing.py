@@ -207,15 +207,16 @@ def get_volume_3D(image, mask, patient_id):
     ValueError
         If `patient_id` is not an integer.
     """
-    
+
     if not isinstance(image, sitk.Image):
-        raise TypeError(f"Expected 'image' to be a SimpleITK Image, but got {type(image)}.")
+        raise TypeError("Expected 'image' to be a SimpleITK Image.")
 
     if not isinstance(mask, sitk.Image):
-        raise TypeError(f"Expected 'mask' to be a SimpleITK Image, but got {type(mask)}.")
+        raise TypeError("Expected 'mask' to be a SimpleITK Image.")
 
     if not isinstance(patient_id, int):
-        raise ValueError(f"Expected 'patient_id' to be a int, but got {type(patient_id)}.")
+        raise ValueError("Expected 'patient_id' to be a int.")
+    
 
     return [{
         'PatientID': f"PR{patient_id}",

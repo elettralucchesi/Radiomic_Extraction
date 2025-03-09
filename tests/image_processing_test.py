@@ -458,6 +458,9 @@ def test_get_slices_2D_labels():
 
 def test_get_slices_2D_skip_slice_on_none():
     """
+    
+    Test that slices without valid regions are excluded from processing results.
+    
     GIVEN a mask slice where process_slice returns None, None (no region found)
     WHEN get_slices_2D is called
     THEN it should skip that slice and not include it in the results
@@ -508,22 +511,27 @@ def test_get_volume_3D_invalid_image_type():
         get_volume_3D(invalid_image, mask_3d, patient_id)
 
 
-def test_get_volume_3D_invalid_image_type():
+@pytest.mark.parametrize("image, mask, patient_id, expected_message", [
+    ("not_an_image", sitk.Image(3, 3, 3, sitk.sitkUInt8), 123, "Expected 'image' to be a SimpleITK Image."),
+    (sitk.Image(3, 3, 3, sitk.sitkUInt8), "not_a_mask", 123, "Expected 'mask' to be a SimpleITK Image."),
+])
+def test_get_volume_3D_type_error(image, mask, patient_id, expected_message):
     """
-    GIVEN: A non-SimpleITK image (e.g., a numpy array).
-    WHEN: The get_volume_3D function is called.
-    THEN: The function should raise a TypeError indicating that the image is not of type SimpleITK.Image.
-    """
-    invalid_image = np.array([[1, 2], [3, 4]])
-    mask_3d = sitk.Image(3, 3, 3, sitk.sitkUInt8)
-    patient_id = 1234
+    Test that get_volume_3D raises TypeError for invalid image or mask inputs.
 
-    with pytest.raises(TypeError, match="Expected 'image' to be a SimpleITK Image"):
-        get_volume_3D(invalid_image, mask_3d, patient_id)
+    GIVEN: An invalid image or mask (e.g., a string instead of an image object).
+    WHEN: The get_volume_3D function is called with these invalid inputs.
+    THEN: A TypeError should be raised indicating the type mismatch.
+    """
+    with pytest.raises(TypeError, match=expected_message):
+        get_volume_3D(image, mask, patient_id)
 
 
 def test_get_volume_3D_invalid_patient_id():
     """
+    
+    Test that get_volume_3D raises ValueError for invalid patient_id.
+    
     GIVEN: A string patient_id.
     WHEN: The get_volume_3D function is called.
     THEN: The function should raise a ValueError indicating that patient_id must be int.
@@ -535,6 +543,8 @@ def test_get_volume_3D_invalid_patient_id():
     with pytest.raises(ValueError, match="Expected 'patient_id' to be a int"):
         get_volume_3D(image_3d, mask_3d, patient_id)
 
+
+# ---------------- Read Image and Mask Tests ----------------
 
 def test_read_image_and_mask_empty_path():
     """
