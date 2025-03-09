@@ -610,36 +610,47 @@ def test_read_image_and_mask_dimension_mismatch(mock_read_image_and_mask_differe
         read_image_and_mask("image.nii", "mask.nii")
 
 
+
 # ---------------- Get Patient Image Mask Dict Tests ----------------
 
-def test_get_patient_image_mask_dict_empty_patient_ids():
-    """
-    GIVEN: An empty list for patient_ids.
-    WHEN: The get_patient_image_mask_dict function is called.
-    THEN: It should raise a ValueError indicating that the patient_ids list cannot be empty.
-    """
-    imgs_path = ["img1.nii", "img2.nii"]
-    masks_path = ["mask1.nii", "mask2.nii"]
-    patient_ids = []  # Empty patient_ids list
-    mode = "3D"
 
-    with pytest.raises(ValueError, match="The patient_ids list cannot be empty."):
+@pytest.mark.parametrize("imgs_path, masks_path, patient_ids, mode, expected_message", [
+    ([], ["mask1.nii", "mask2.nii"], {1, 2}, "2D", "The imgs_path, masks_path, and patient_ids cannot be empty."),
+    (["image1.nii", "image2.nii"], [], {1, 2}, "2D", "The imgs_path, masks_path, and patient_ids cannot be empty."),
+    (["image1.nii", "image2.nii"], ["mask1.nii", "mask2.nii"], set(), "2D", "The imgs_path, masks_path, and patient_ids cannot be empty."),
+    (["image1.nii", "image2.nii"], ["mask1.nii", "mask2.nii"], {1}, "2D", "The number of images, masks, and patient_ids must be the same."),
+])
+def test_get_patient_image_mask_dict_value_error(imgs_path, masks_path, patient_ids, mode, expected_message):
+    """
+    Test that the function get_patient_image_mask_dict raises ValueError with the correct message.
+
+    GIVEN: Invalid paths and mode or empty list of patient_ids
+    WHEN: The function get_patient_image_mask_dict is called
+    THEN: ValueError is raised with the correct message
+    """
+    with pytest.raises(ValueError, match=expected_message):
         get_patient_image_mask_dict(imgs_path, masks_path, patient_ids, mode)
 
 
-def test_get_patient_image_mask_dict_images_masks_and_patient_ids_count():
+@pytest.mark.parametrize("imgs_path, masks_path, patient_ids, mode, expected_message", [
+    (["image1.nii", 123], ["mask1.nii", "mask2.nii"], {1, 2}, "2D", "imgs_path must be a list of strings."),
+    (["image1.nii", "image2.nii"], ["mask1.nii", 123], {1, 2}, "2D", "masks_path must be a list of strings."),
+    (["image1.nii", "image2.nii"], ["mask1.nii", "mask2.nii"], [1, 2], "2D", "patient_ids must be a set of integers."),
+    (123, ["mask1.nii", "mask2.nii"], {1, 2}, "2D", "imgs_path must be a list of strings."),
+    (["image1.nii", "image2.nii"], 123, {1, 2}, "2D", "masks_path must be a list of strings."),
+    (["image1.nii", "image2.nii"], ["mask1.nii", "mask2.nii"], "1, 2", "2D", "patient_ids must be a set of integers."),
+])
+def test_get_patient_image_mask_dict_type_error(imgs_path, masks_path, patient_ids, mode, expected_message):
     """
-    GIVEN: Lists of image paths, mask paths, and patient ids with unequal lengths.
-    WHEN: The get_patient_image_mask_dict function is called.
-    THEN: It should raise a ValueError indicating that all lists must have the same length.
-    """
-    imgs_path = ["img1.nii", "img2.nii"]
-    masks_path = ["mask1.nii"]
-    patient_ids = [1, 2]
-    mode = "3D"
+    Test that the function get_patient_image_mask_dict raises TypeError with the correct message.
 
-    with pytest.raises(ValueError, match="The number of images, masks, and patient_ids must be the same."):
+    GIVEN: Invalid paths or incorrect types for imgs_path, masks_path, or patient_ids
+    WHEN: The function get_patient_image_mask_dict is called
+    THEN: TypeError is raised with the correct message
+    """
+    with pytest.raises(TypeError, match=expected_message):
         get_patient_image_mask_dict(imgs_path, masks_path, patient_ids, mode)
+
 
 
 @patch('features_extraction.image_processing.read_image_and_mask')
@@ -649,12 +660,57 @@ def test_get_patient_image_mask_dict_invalid_mode(mock_read_image):
     WHEN: The get_patient_image_mask_dict function is called.
     THEN: It should raise a ValueError indicating that only '2D' and '3D' modes are allowed.
     """
-    mock_read_image.return_value = (None, None)  # Mock return value
+    mock_read_image.return_value = (None, None)
 
     imgs_path = ["img1.nii", "img2.nii"]
     masks_path = ["mask1.nii", "mask2.nii"]
-    patient_ids = [1, 2]
-    mode = "4D"  # Invalid mode
+    patient_ids = {1, 2}
+    mode = "4D"
 
     with pytest.raises(ValueError, match="Mode should be '2D' or '3D'"):
         get_patient_image_mask_dict(imgs_path, masks_path, patient_ids, mode)
+
+
+
+@pytest.mark.parametrize("imgs_path, masks_path, patient_ids, mode, expected_output", [
+    (["image1.nii", "image2.nii"], ["mask1.nii", "mask2.nii"], {1, 2}, "2D", {
+        1: ["slice_1_1", "slice_1_2"],
+        2: ["slice_2_1", "slice_2_2"]}),
+    
+    (["image1.nii", "image2.nii"], ["mask1.nii", "mask2.nii"], {1, 2}, "3D", {
+        1: ["volume_1"],
+        2: ["volume_2"]})
+])
+@patch("features_extraction.image_processing.read_image_and_mask")
+@patch("features_extraction.image_processing.get_slices_2D")
+@patch("features_extraction.image_processing.get_volume_3D")
+def test_get_patient_image_mask_dict(mock_get_volume_3D, mock_get_slices_2D, mock_read_image_and_mask, imgs_path, masks_path, patient_ids, mode, expected_output):
+    """
+    Test to verify that the get_patient_image_mask_dict function returns the correct dictionary.
+    
+    GIVEN: img_path, mask_path, patient_ids and valid mode
+    WHEN: The function get_patient_image_mask_dict is called
+    THEN: The result should be a dictionary with the correct structure.
+    """
+
+    mock_read_image_and_mask.return_value = ("image_data", "mask_data")
+
+    if mode == "2D":
+        def get_mocked_slices(image, mask, patient_id):
+            if patient_id == 1:
+                return ["slice_1_1", "slice_1_2"]
+            elif patient_id == 2:
+                return ["slice_2_1", "slice_2_2"]
+        
+        mock_get_slices_2D.side_effect = get_mocked_slices
+
+    elif mode == "3D":
+        def get_mocked_volume(image, mask, patient_id):
+            return [f"volume_{patient_id}"]
+        
+        mock_get_volume_3D.side_effect = get_mocked_volume
+
+
+    result = get_patient_image_mask_dict(imgs_path, masks_path, patient_ids, mode)
+
+    assert result == expected_output, f"Expected {expected_output}, but got {result}"

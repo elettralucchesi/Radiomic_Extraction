@@ -282,7 +282,7 @@ def get_patient_image_mask_dict(imgs_path, masks_path, patient_ids, mode):
         List of file paths to image files.
     masks_path : list[str]
         List of file paths to mask files.
-    patient_ids : list[int]
+    patient_ids : set[int]
         List of patient IDs.
     mode : str
         Either '2D' or '3D' to determine processing type.
@@ -300,15 +300,27 @@ def get_patient_image_mask_dict(imgs_path, masks_path, patient_ids, mode):
     Raises
     ------
     ValueError
-        If `patient_ids` is empty.
+        If `imgs_path`, `masks_path`, or `patient_ids` is empty.
         If `imgs_path`, `masks_path`, and `patient_ids` have different lengths.
         If `mode` is not '2D' or '3D'.
+    TypeError
+        If `imgs_path` or `masks_path` are not lists of strings.
+        If `patient_ids` is not a set of integers.
     """
-    if len(patient_ids) == 0:
-        raise ValueError("The patient_ids list cannot be empty.")
+    
+    if not isinstance(imgs_path, list) or not all(isinstance(path, str) for path in imgs_path):
+        raise TypeError("imgs_path must be a list of strings.")
+    if not isinstance(masks_path, list) or not all(isinstance(path, str) for path in masks_path):
+        raise TypeError("masks_path must be a list of strings.")
+    if not isinstance(patient_ids, set) or not all(isinstance(pid, int) for pid in patient_ids):
+        raise TypeError("patient_ids must be a set of integers.")
+
+    if len(imgs_path) == 0 or len(masks_path) == 0 or len(patient_ids) == 0:
+        raise ValueError("The imgs_path, masks_path, and patient_ids cannot be empty.")
 
     if len(imgs_path) != len(masks_path) or len(imgs_path) != len(patient_ids):
         raise ValueError("The number of images, masks, and patient_ids must be the same.")
+
 
     patient_dict = {}
 
