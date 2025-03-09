@@ -546,45 +546,61 @@ def test_get_volume_3D_invalid_patient_id():
 
 # ---------------- Read Image and Mask Tests ----------------
 
-def test_read_image_and_mask_empty_path():
+@pytest.mark.parametrize("image_path, mask_path, expected_message", [
+    ("", "valid_mask_path", "Image and mask paths cannot be empty."),
+    ("valid_image_path", "", "Image and mask paths cannot be empty."),
+    ("path/to/image/image.nii", "path/to/mask/different_mask.nii", "Image and mask must be in the same directory."),
+])
+def test_read_image_and_mask_value_error(image_path, mask_path, expected_message):
     """
-    GIVEN: Empty paths for the image and mask.
-    WHEN: The function is called.
-    THEN: A ValueError should be raised.
+    Test that the read_image_and_mask function raises ValueError with the correct message.
+    
+    GIVEN: Invalid paths.
+    WHEN: The read_image_and_mask function is called.
+    THEN: ValueError is raised with the correct message.
     """
-    with pytest.raises(ValueError, match="Image and mask paths cannot be empty."):
-        read_image_and_mask("", "")
+    with pytest.raises(ValueError, match=expected_message):
+        read_image_and_mask(image_path, mask_path)
 
 
-def test_read_image_and_mask_non_string_path():
+@pytest.mark.parametrize("image_path, mask_path, expected_message", [
+    (123, "valid_mask_path", "Image and mask paths must be strings."),
+    ("valid_image_path", 123, "Image and mask paths must be strings."),
+])
+def test_read_image_and_mask_type_error(image_path, mask_path, expected_message):
     """
-    GIVEN: Non-string paths for the image and mask.
-    WHEN: The function is called.
-    THEN: A TypeError should be raised.
+    Test that the read_image_and_mask function raises TypeError with the correct message.
+    
+    GIVEN: Non-string paths.
+    WHEN: The read_image_and_mask function is called.
+    THEN: TypeError is raised with the correct message.
     """
-    with pytest.raises(TypeError, match="Image and mask paths must be strings."):
-        read_image_and_mask(123, 456)
+    with pytest.raises(TypeError, match=expected_message):
+        read_image_and_mask(image_path, mask_path)
 
 
 @pytest.fixture
 def mock_read_image_and_mask_different_size():
     """
+    Mocked function that simulates reading an image and a mask with different dimensions.
+    
     GIVEN: A mocked function that returns an image and a mask with different dimensions.
     WHEN: It is used in place of the actual function.
     THEN: The returned image and mask will have mismatched dimensions.
     """
     def _mock(img_path, mask_path):
-        img = sitk.Image(3, 3, 3, sitk.sitkUInt8)  # 3x3x3 image
-        mask = sitk.Image(4, 4, 4, sitk.sitkUInt8)  # 4x4x4 mask (different size)
+        img = sitk.Image(3, 3, 3, sitk.sitkUInt8) 
+        mask = sitk.Image(4, 4, 4, sitk.sitkUInt8)
         return img, mask
-
     return _mock
 
 
 def test_read_image_and_mask_dimension_mismatch(mock_read_image_and_mask_different_size, monkeypatch: pytest.MonkeyPatch):
     """
+    Test that read_image_and_mask raises ValueError for mismatched image and mask dimensions.
+    
     GIVEN: An image and a mask with different dimensions.
-    WHEN: The function is called.
+    WHEN: The read_image_and_mask function is called.
     THEN: A ValueError should be raised.
     """
     monkeypatch.setattr("SimpleITK.ReadImage",
@@ -594,7 +610,7 @@ def test_read_image_and_mask_dimension_mismatch(mock_read_image_and_mask_differe
         read_image_and_mask("image.nii", "mask.nii")
 
 
-
+# ---------------- Get Patient Image Mask Dict Tests ----------------
 
 def test_get_patient_image_mask_dict_empty_patient_ids():
     """
