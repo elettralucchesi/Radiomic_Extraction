@@ -101,22 +101,32 @@ def test_extract_largest_region_type_errors(mask_slice, label_value, expected_ex
         extract_largest_region(mask_slice, label_value)
 
 
-def test_extract_largest_region_negative_label():
-    """
-    Test that the function raises an error when the label value is negative.
-
-    GIVEN: A negative label value.
-    WHEN: The extract_largest_region function is called.
-    THEN: The function should raise a ValueError indicating the label cannot be negative.
+@pytest.mark.parametrize(
+    "mask_slice, label_value, expected_exception, expected_message",
+    [
+        (np.array([[1, 1, 0, 0],
+                   [1, 1, 0, 0],
+                   [1, 0, 1, 1],
+                   [0, 0, 1, 1]]), 
+         -1, ValueError, "Label value cannot be negative"),
+        
+        (np.zeros((3, 3, 3), dtype=np.uint8), 
+         1, ValueError, "mask_slice must be a 2D array")
+    ]
+)
+def test_extract_largest_region_value_errors(mask_slice, label_value, expected_exception, expected_message):
     """
     
-    mask_slice = np.array([[1, 1, 0, 0],
-                     [1, 1, 0, 0],
-                     [1, 0, 1, 1],
-                     [0, 0, 1, 1]]) 
-    label_value = -1 
+    Test that the function raises ValueError for invalid input values.
+    
+    GIVEN invalid inputs for extract_largest_region:
+        - A negative label value
+        - A mask slice that is not 2D
+    WHEN the function is called
+    THEN it should raise the expected exception with the correct error message.
+    """
 
-    with pytest.raises(ValueError, match="Label value cannot be negative"):
+    with pytest.raises(expected_exception, match=expected_message):
         extract_largest_region(mask_slice, label_value)
 
 
@@ -248,12 +258,11 @@ def test_process_slice_raises_type_error_if_not_array():
     with pytest.raises(TypeError, match="mask_slice must be a numpy array"):
         process_slice(invalid_input)
 
+
 def test_process_slice_raises_value_error_if_not_2d():
     """
-    
     Test that the function raises ValueError when receiving non-2D array.
 
-    
     GIVEN an input that is not a 2D array
     WHEN process_slice is called
     THEN it should raise a ValueError

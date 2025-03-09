@@ -30,6 +30,7 @@ def extract_largest_region(mask_slice, label_value):
         If `mask_slice` is an integer and `label_value` is a numpy array.
         If `label_value` is not an integer.
     ValueError
+        If `mask_slice` is not 2D. 
         If `label_value` is negative.
     """
 
@@ -38,6 +39,9 @@ def extract_largest_region(mask_slice, label_value):
             "Inputs appear to be swapped. Expected mask_slice as a numpy array and label_value as an integer.")
     if not isinstance(mask_slice, np.ndarray):
         raise TypeError("mask_slice must be a numpy array")
+    if mask_slice.ndim != 2:
+        raise ValueError("mask_slice must be a 2D array")
+    
     if not isinstance(label_value, int):
         raise TypeError("Label value must be an integer")
     if label_value < 0:
