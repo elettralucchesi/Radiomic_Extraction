@@ -3,6 +3,7 @@ import SimpleITK as sitk
 import os
 import numpy as np
 
+
 def extract_largest_region(mask_slice, label_value):
     """
     Extract the largest connected region of a given label from a binary mask slice.
@@ -25,17 +26,18 @@ def extract_largest_region(mask_slice, label_value):
     Raises
     ------
     TypeError
+        If `mask_slice` is not a numpy array.
         If `mask_slice` is an integer and `label_value` is a numpy array.
         If `label_value` is not an integer.
     ValueError
         If `label_value` is negative.
     """
 
-    # Check if inputs are swapped (i.e., label_value is a numpy array and mask_slice is an integer)
     if isinstance(mask_slice, int) and isinstance(label_value, np.ndarray):
         raise TypeError(
             "Inputs appear to be swapped. Expected mask_slice as a numpy array and label_value as an integer.")
-
+    if not isinstance(mask_slice, np.ndarray):
+        raise TypeError("mask_slice must be a numpy array")
     if not isinstance(label_value, int):
         raise TypeError("Label value must be an integer")
     if label_value < 0:
@@ -50,12 +52,10 @@ def extract_largest_region(mask_slice, label_value):
     largest_region = None
     largest_area = 0
 
-    # Iterate through all connected components, ignoring the background (0)
     for region_id in range(1, num_labels + 1):
         region = (labeled_region == region_id).astype(mask_slice.dtype) * label_value
         region_area = np.sum(region > 0)
 
-        # Update the largest region if the current one is bigger
         if region_area > largest_area:
             largest_area = region_area
             largest_region = region
