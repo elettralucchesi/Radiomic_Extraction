@@ -159,18 +159,18 @@ def get_slices_2D(image, mask, patient_id):
         mask_slice = mask_array[slice_idx, :, :]
         image_slice = image_array[slice_idx, :, :]
 
-        region_mask, region_label = process_slice(mask_slice)
-        if region_mask is None:
+        new_mask_slice, mask_label = process_slice(mask_slice)
+        if new_mask_slice is None:
             continue
 
-        largest_region_mask_image  = sitk.GetImageFromArray(region_mask)
+        new_mask_slice_image  = sitk.GetImageFromArray(new_mask_slice)
         image_slice_image = sitk.GetImageFromArray(image_slice)
         patient_slices.append({
             'PatientID': f"PR{patient_id}",
-            'Label': region_label,
+            'Label': mask_label,
             'SliceIndex': slice_idx,
             'ImageSlice':  image_slice_image,
-            'MaskSlice': largest_region_mask_image
+            'MaskSlice': new_mask_slice_image
         })
 
     return patient_slices

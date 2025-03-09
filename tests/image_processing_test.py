@@ -275,19 +275,54 @@ def test_process_slice_raises_value_error_if_not_2d():
 
 
 
-
 # ---------------- Get Slices 2D Tests ----------------
+
+
+@pytest.mark.parametrize("image, mask", [
+    (None, sitk.Image(10, 10, 10, sitk.sitkUInt8)),
+    (sitk.Image(10, 10, 10, sitk.sitkUInt8), None),
+    ("not an image", sitk.Image(10, 10, 10, sitk.sitkUInt8)),
+    (sitk.Image(10, 10, 10, sitk.sitkUInt8), "not an image")
+])
+
+def test_get_slices_2D_raises_typeerror_for_invalid_inputs(image, mask):
+    """
+    Test that get_slices_2D raises TypeError for invalid image or mask inputs.
+
+    GIVEN: An invalid image or mask.
+    WHEN: The get_slices_2D function is called.
+    THEN: A TypeError should be raised.
+    """
+    with pytest.raises(TypeError):
+        get_slices_2D(image, mask, patient_id=1)
+
+
+@pytest.mark.parametrize("patient_id", ["string", 3.5, None, [1, 2, 3]])
+def test_get_slices_2D_raises_valueerror_for_invalid_patient_id(patient_id):
+    """
+    Test that get_slices_2D raises ValueError for invalid patient_id.
+
+    GIVEN: An invalid patient_id.
+    WHEN: The get_slices_2D function is called.
+    THEN: A ValueError should be raised.
+    """
+    image = sitk.Image(10, 10, 10, sitk.sitkUInt8)
+    mask = sitk.Image(10, 10, 10, sitk.sitkUInt8)
+    with pytest.raises(ValueError):
+        get_slices_2D(image, mask, patient_id)
+
 
 def test_get_slices_2D_valid_length():
     """
-    Test that get_slices_2D returns the expected number of slices for a valid input.
+    Test that get_slices_2D returns the expected number of patient slices for a valid input.
 
     GIVEN: A valid image and mask.
     WHEN: The function get_slices_2D is called.
     THEN: It should return a list with the correct number of slices.
     """
-    image_array = np.random.rand(3, 4, 4)  # 3 slices, 4x4 pixels
-    mask_array = np.array([  # 3 slices, label 1 and 2
+    
+    image_array = np.random.rand(3, 4, 4)
+    mask_array = np.array([
         [[0, 1, 1, 0], [0, 1, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
         [[0, 0, 0, 0], [1, 1, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
         [[2, 2, 0, 0], [2, 2, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
@@ -296,21 +331,21 @@ def test_get_slices_2D_valid_length():
     mask = sitk.GetImageFromArray(mask_array)
     patient_id = 1234
 
-    slices = get_slices_2D(image, mask, patient_id)
+    patient_slices = get_slices_2D(image, mask, patient_id)
 
-    assert len(slices) == 3, f"Expected 3 slices, but got {len(slices)}."
+    assert len(patient_slices) == 3, f"Expected 3 slices, but got {len(patient_slices)}."
 
 
 def test_get_slices_2D_patient_id():
     """
-    Test that the PatientID is correctly set in the slice data.
+    Test that the PatientID is correctly set in the patient slice data.
 
     GIVEN: A valid image, mask, and PatientID.
     WHEN: The function get_slices_2D is called.
     THEN: The PatientID should be included correctly in each slice data.
     """
     image_array = np.random.rand(3, 4, 4)
-    mask_array = np.array([  # 3 slices
+    mask_array = np.array([ 
         [[0, 1, 1, 0], [0, 1, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
         [[0, 0, 0, 0], [1, 1, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
         [[2, 2, 0, 0], [2, 2, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
@@ -319,21 +354,22 @@ def test_get_slices_2D_patient_id():
     mask = sitk.GetImageFromArray(mask_array)
     patient_id = 1234
 
-    slices = get_slices_2D(image, mask, patient_id)
+    patient_slices = get_slices_2D(image, mask, patient_id)
 
-    assert slices[0]['PatientID'] == f"PR{patient_id}", f"Expected PatientID 'PR{patient_id}', but got {slices[0]['PatientID']}."
+    for slice_data in patient_slices:
+        assert slice_data['PatientID'] == f"PR{patient_id}", f"Expected PatientID 'PR{patient_id}', but got {slice_data['PatientID']}."
 
 
 def test_get_slices_2D_slice_index():
     """
-    Test that the SliceIndex is correctly set in the slice data.
+    Test that the SliceIndex is correctly set in the patient slice data.
 
     GIVEN: A valid image, mask, and PatientID.
     WHEN: The function get_slices_2D is called.
     THEN: The SliceIndex should be correctly set for each slice.
     """
     image_array = np.random.rand(3, 4, 4)
-    mask_array = np.array([  # 3 slices
+    mask_array = np.array([  
         [[0, 1, 1, 0], [0, 1, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
         [[0, 0, 0, 0], [1, 1, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
         [[2, 2, 0, 0], [2, 2, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
@@ -342,9 +378,11 @@ def test_get_slices_2D_slice_index():
     mask = sitk.GetImageFromArray(mask_array)
     patient_id = 1234
 
-    slices = get_slices_2D(image, mask, patient_id)
-
-    assert slices[1]['SliceIndex'] == 1, f"Expected slice index 1, but got {slices[1]['SliceIndex']}."
+    patient_slices = get_slices_2D(image, mask, patient_id)
+    c=0
+    for slice_data in patient_slices:
+        assert slice_data['SliceIndex'] == c, f"Expected slice index {c}, but got {slice_data['SliceIndex']}."
+        c=c+1
 
 
 def test_get_slices_2D_image_slice():
@@ -355,8 +393,9 @@ def test_get_slices_2D_image_slice():
     WHEN: The function get_slices_2D is called.
     THEN: The 'ImageSlice' in the returned data should be a SimpleITK Image.
     """
+    
     image_array = np.random.rand(3, 4, 4)
-    mask_array = np.array([  # 3 slices
+    mask_array = np.array([
         [[0, 1, 1, 0], [0, 1, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
         [[0, 0, 0, 0], [1, 1, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
         [[2, 2, 0, 0], [2, 2, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
@@ -365,9 +404,10 @@ def test_get_slices_2D_image_slice():
     mask = sitk.GetImageFromArray(mask_array)
     patient_id = 1234
 
-    slices = get_slices_2D(image, mask, patient_id)
+    patient_slices = get_slices_2D(image, mask, patient_id)
 
-    assert isinstance(slices[0]['ImageSlice'], sitk.Image), "Expected 'ImageSlice' to be a SimpleITK Image."
+    for slice_data in patient_slices:
+        assert isinstance(slice_data['ImageSlice'], sitk.Image), "Expected 'ImageSlice' to be a SimpleITK Image."
 
 
 def test_get_slices_2D_mask_slice():
@@ -388,9 +428,10 @@ def test_get_slices_2D_mask_slice():
     mask = sitk.GetImageFromArray(mask_array)
     patient_id = 1234
 
-    slices = get_slices_2D(image, mask, patient_id)
-
-    assert isinstance(slices[0]['MaskSlice'], sitk.Image), "Expected 'MaskSlice' to be a SimpleITK Image."
+    patient_slices = get_slices_2D(image, mask, patient_id)
+    
+    for slice_data in patient_slices:
+        assert isinstance(slice_data['MaskSlice'], sitk.Image), "Expected 'MaskSlice' to be a SimpleITK Image."
 
 
 def test_get_slices_2D_labels():
@@ -410,24 +451,9 @@ def test_get_slices_2D_labels():
     image = sitk.GetImageFromArray(image_array)
     mask = sitk.GetImageFromArray(mask_array)
     patient_id = 1234
-    slices = get_slices_2D(image, mask, patient_id)
-    assert slices[0]['Label'] == 1, f"Expected label 1 for first slice, but got {slices[0]['Label']}."
-
-
-def test_get_slices_2D_invalid_image_type():
-    """
-    Test that a TypeError is raised when the 'image' is not a SimpleITK Image.
-
-    GIVEN: A non-SimpleITK object for 'image'.
-    WHEN: The function get_slices_2D is called.
-    THEN: A TypeError should be raised.
-    """
-    mask_array = np.random.rand(3, 4, 4)
-    mask = sitk.GetImageFromArray(mask_array)
-    patient_id = 1234
-
-    with pytest.raises(TypeError, match="Expected 'image' to be a SimpleITK Image"):
-        get_slices_2D("invalid_image", mask, patient_id)
+    patient_slices = get_slices_2D(image, mask, patient_id)
+    for slice_data in patient_slices:
+        assert slice_data['Label'] in [1, 2], f"Expected label 1 or 2, but got {slice_data['Label']}."
 
 
 def test_get_slices_2D_skip_slice_on_none():
@@ -436,22 +462,22 @@ def test_get_slices_2D_skip_slice_on_none():
     WHEN get_slices_2D is called
     THEN it should skip that slice and not include it in the results
     """
+    
     # Create a 3D image and mask where one slice will have no region
-    img = sitk.GetImageFromArray(np.random.rand(3, 10, 10))  # 3 slices
+    img = sitk.GetImageFromArray(np.random.rand(3, 10, 10))
     mask = sitk.GetImageFromArray(np.array([np.zeros((10, 10)), np.zeros((10, 10)), np.ones((10, 10))],
                                            dtype=np.uint16))  # Only last slice has region
 
-    # Mock patient ID
     patient_id = 123
 
     # Mock the process_slice function to return (None, None) for the first two slices and valid results for the last slice
     with patch('features_extraction.image_processing.process_slice', side_effect=[(None, None), (None, None), (np.ones((10, 10)), 1)]):
         result = get_slices_2D(img, mask, patient_id)
-
-    # Assert that the result contains only one slice (the third slice where the region was found)
     assert len(result) == 1, f"Expected 1 slice, but got {len(result)}"
 
 
+
+# ---------------- Get Volume 3D Tests ----------------
 
 def test_get_volume_3D_return_type():
     """
