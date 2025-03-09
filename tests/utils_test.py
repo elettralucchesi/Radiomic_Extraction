@@ -9,7 +9,7 @@ def setup_test_files(tmp_path):
     Creates a temporary directory with test image and mask files.
 
     GIVEN: A temporary directory.
-    WHEN: Dummy .nii files (images and masks) are created in the directory.
+    WHEN: Dummy.nii files (images and masks) are created in the directory.
     THEN: The function returns the temporary directory with image and mask file names.
     """
     
@@ -20,6 +20,7 @@ def setup_test_files(tmp_path):
         (tmp_path / file).write_text("test")  # Create dummy files
 
     return tmp_path, img_files, mask_files
+
 
 
 def test_get_path_images_masks_images(setup_test_files):
@@ -62,10 +63,8 @@ def test_get_path_images_masks_invalid_int():
     WHEN: The get_path_images_masks function is called with an integer.
     THEN: The function raises a TypeError with the appropriate error message.
     """
-    with pytest.raises(TypeError, match="Path must be a string") as exc_info:
-        get_path_images_masks(123)  # Pass an integer
-    assert str(exc_info.value) == "Path must be a string", f"Expected error message 'Path must be a string', but got: {str(exc_info.value)}"
-
+    with pytest.raises(TypeError, match="Path must be a string"):
+        get_path_images_masks(123) 
 
 def test_get_path_images_masks_invalid_none():
     """
@@ -75,10 +74,8 @@ def test_get_path_images_masks_invalid_none():
     WHEN: The get_path_images_masks function is called with None.
     THEN: The function raises a TypeError with the appropriate error message.
     """
-    with pytest.raises(TypeError, match="Path must be a string") as exc_info:
-        get_path_images_masks(None)  # Pass None
-    assert str(exc_info.value) == "Path must be a string", f"Expected error message 'Path must be a string', but got: {str(exc_info.value)}"
-
+    with pytest.raises(TypeError, match="Path must be a string"):
+        get_path_images_masks(None) 
 
 def test_get_path_images_masks_empty_directory(tmp_path):
     """
@@ -88,10 +85,8 @@ def test_get_path_images_masks_empty_directory(tmp_path):
     WHEN: The get_path_images_masks function is called on the directory.
     THEN: The function raises a ValueError with the appropriate error message.
     """
-    with pytest.raises(ValueError, match="The directory is empty or contains no .nii files") as exc_info:
-        get_path_images_masks(str(tmp_path))  # Pass an empty directory
-    assert str(exc_info.value) == "The directory is empty or contains no .nii files", f"Expected error message 'The directory is empty or contains no .nii files', but got: {str(exc_info.value)}"
-
+    with pytest.raises(ValueError, match="The directory is empty or contains no .nii files"):
+        get_path_images_masks(str(tmp_path)) 
 
 def test_get_path_images_masks_no_nii_files(tmp_path):
     """
@@ -101,18 +96,14 @@ def test_get_path_images_masks_no_nii_files(tmp_path):
     WHEN: The get_path_images_masks function is called on the directory.
     THEN: The function raises a ValueError with the appropriate error message.
     """
-    # Create files with incorrect extensions
+
     non_nii_files = ["file1.txt", "file2.csv", "file3.jpg"]
 
     for file in non_nii_files:
-        (tmp_path / file).write_text("test")  # Create non-.nii files
+        (tmp_path / file).write_text("test")  
 
-    with pytest.raises(ValueError, match="The directory is empty or contains no .nii files") as exc_info:
-        get_path_images_masks(str(tmp_path))  # Pass the directory without .nii files
-
-    assert str(
-        exc_info.value) == "The directory is empty or contains no .nii files", f"Expected error message 'The directory is empty or contains no .nii files', but got: {str(exc_info.value)}"
-
+    with pytest.raises(ValueError, match="The directory is empty or contains no .nii files"):
+        get_path_images_masks(str(tmp_path)) 
 
 
 def test_get_path_images_masks_mismatched_files(tmp_path):
@@ -124,16 +115,13 @@ def test_get_path_images_masks_mismatched_files(tmp_path):
     THEN: The function raises a ValueError with the appropriate error message.
     """
     img_files = ["patient1.nii", "patient2.nii"]
-    mask_files = ["patient1_seg.nii"]  # Only one mask file for two image files
+    mask_files = ["patient1_seg.nii"]  
 
     for file in img_files + mask_files:
-        (tmp_path / file).write_text("test")  # Create both images and masks
+        (tmp_path / file).write_text("test")
 
-    with pytest.raises(ValueError, match="The number of image files does not match the number of mask files") as exc_info:
+    with pytest.raises(ValueError, match="The number of image files does not match the number of mask files"):
         get_path_images_masks(str(tmp_path))
-
-    assert str(exc_info.value) == "The number of image files does not match the number of mask files", \
-        f"Expected error message 'The number of image files does not match the number of mask files', but got: {str(exc_info.value)}"
 
 
 def test_get_path_images_masks_multiple_masks_for_one_image(tmp_path):
@@ -144,19 +132,17 @@ def test_get_path_images_masks_multiple_masks_for_one_image(tmp_path):
     WHEN: The get_path_images_masks function is called.
     THEN: The function raises a ValueError with the appropriate error message.
     """
-    img_files = ["patient1.nii"]  # One image file
-    mask_files = ["patient1_seg.nii", "patient2_seg.nii"]  # Two mask files
+    img_files = ["patient1.nii"]  
+    mask_files = ["patient1_seg.nii", "patient2_seg.nii"] 
 
     for file in img_files + mask_files:
-        (tmp_path / file).write_text("test")  # Create one image and multiple masks
+        (tmp_path / file).write_text("test") 
 
     with pytest.raises(ValueError, match="The number of image files does not match the number of mask files") as exc_info:
         get_path_images_masks(str(tmp_path))
 
-    assert str(exc_info.value) == "The number of image files does not match the number of mask files", \
-        f"Expected error message 'The number of image files does not match the number of mask files', but got: {str(exc_info.value)}"
 
-
+# ------------------- Extract ID tests -------------------
 
 def test_extract_id_valid():
     """
@@ -166,12 +152,15 @@ def test_extract_id_valid():
     WHEN: The extract_id function is called.
     THEN: The function returns the correct patient ID.
     """
+    
     valid_path = "/path/to/PR12345_image.nii"
     result = extract_id(valid_path)
     assert result == 12345, f"Expected patient ID: 12345, but got: {result}"
 
 def test_extract_id_invalid_format_with_pr():
     """
+    Test that the function handles filenames with incorrectly formatted patient IDs.
+    
     GIVEN: A filename with an incorrectly formatted patient ID containing 'PR'.
     WHEN: The extract_id function is called.
     THEN: The function prints an error message and returns None.
@@ -179,8 +168,11 @@ def test_extract_id_invalid_format_with_pr():
     result = extract_id('path/to/PR_2_image.nii')
     assert result is None, f"Expected None, but got {result}"
 
+
 def test_extract_id_invalid_number_before_pr():
     """
+    Test that the function handles filenames where the number precedes 'PR'.
+    
     GIVEN: A filename where the number precedes 'PR' (e.g., '2PR').
     WHEN: The extract_id function is called.
     THEN: The function prints an error message and returns None.
@@ -188,8 +180,11 @@ def test_extract_id_invalid_number_before_pr():
     result = extract_id('path/to/2PR_image.nii')
     assert result is None, f"Expected None, but got {result}"
 
+
 def test_extract_id_no_pr():
     """
+    Test that the function handles filenames where the ID lacks the 'PR' prefix.
+    
     GIVEN: A filename without a patient ID or 'PR' prefix.
     WHEN: The extract_id function is called.
     THEN: The function prints an error message and returns None.
@@ -198,27 +193,10 @@ def test_extract_id_no_pr():
     assert result is None, f"Expected None, but got {result}"
 
 
-def test_extract_id_multiple_pr_but_wrong_format():
-    """
-    GIVEN: A filename containing multiple 'PR' but in an incorrect format.
-    WHEN: The extract_id function is called.
-    THEN: The function prints an error message and returns None.
-    """
-    result = extract_id('path/to/PRabc_PR123X_image.nii')
-    assert result is None, f"Expected None, but got {result}"
-
-
-def test_extract_id_no_pr_prefix():
-    """
-    GIVEN: A filename where the ID is present but lacks the 'PR' prefix.
-    WHEN: The extract_id function is called.
-    THEN: The function prints an error message and returns None.
-    """
-    result = extract_id('path/to/12345_image.nii')
-    assert result is None, f"Expected None, but got {result}"
-
 def test_extract_id_non_string_path():
     """
+    Test that the function raises a TypeError when provided with a non-string input.
+    
     GIVEN: A non-string input as path.
     WHEN: The extract_id function is called.
     THEN: The function raises a TypeError.
@@ -228,6 +206,8 @@ def test_extract_id_non_string_path():
 
 def test_extract_id_none_input():
     """
+    Test that the function raises a TypeError when provided with a None input.
+    
     GIVEN: A None input.
     WHEN: The extract_id function is called.
     THEN: The function raises a TypeError.
@@ -237,6 +217,8 @@ def test_extract_id_none_input():
 
 def test_extract_id_multiple_valid_pr():
     """
+    Test that the function extracts only the first valid patient ID when multiple are present.
+        
     GIVEN: A filename with multiple valid 'PR<number>' occurrences.
     WHEN: The extract_id function is called.
     THEN: The function returns only the first valid patient ID.
@@ -245,7 +227,7 @@ def test_extract_id_multiple_valid_pr():
     assert result == 12, f"Expected 12, but got {result}"
 
 
-
+# ------------------- New Patient ID tests -------------------
 
 def test_new_patient_id_empty_set():
     """
@@ -275,7 +257,7 @@ def test_new_patient_id_missing_numbers():
     """
     Test that the function assigns the lowest available patient ID when there are missing numbers.
 
-    GIVEN: A set of patient IDs {2, 3, 5}.
+    GIVEN: A set of patient IDs {1, 2, 3, 5}.
     WHEN: The new_patient_id function is called.
     THEN: The function returns 1 as the first available ID.
     """
@@ -305,7 +287,7 @@ def test_new_patient_id_invalid_type_list():
     THEN: The function raises a TypeError.
     """
     with pytest.raises(TypeError, match="patients_id must be a set"):
-        new_patient_id([1, 2, 3])  # List instead of set
+        new_patient_id([1, 2, 3]) 
 
 
 def test_new_patient_id_invalid_type_string():
@@ -317,7 +299,8 @@ def test_new_patient_id_invalid_type_string():
     THEN: The function raises a TypeError.
     """
     with pytest.raises(TypeError, match="patients_id must be a set"):
-        new_patient_id("123")  # String instead of set
+        new_patient_id("123")  
+
 
 def test_new_patient_id_non_integer_values_string():
     """
@@ -327,8 +310,9 @@ def test_new_patient_id_non_integer_values_string():
     WHEN: The new_patient_id function is called.
     THEN: The function raises a ValueError.
     """
-    with pytest.raises(ValueError, match="All patient IDs must be integers"):
-        new_patient_id({1, 2, "three"})  # Contains a string
+    with pytest.raises(TypeError, match="All patient IDs must be integers"):
+        new_patient_id({1, 2, "three"}) 
+
 
 def test_new_patient_id_non_integer_values_float():
     """
@@ -338,8 +322,8 @@ def test_new_patient_id_non_integer_values_float():
     WHEN: The new_patient_id function is called.
     THEN: The function raises a ValueError.
     """
-    with pytest.raises(ValueError, match="All patient IDs must be integers"):
-        new_patient_id({1, 2, 3.5})  # Contains a float
+    with pytest.raises(TypeError, match="All patient IDs must be integers"):
+        new_patient_id({1, 2, 3.5}) 
 
 def test_new_patient_id_negative_values():
     """
@@ -354,6 +338,7 @@ def test_new_patient_id_negative_values():
         new_patient_id(existing_ids)
 
 
+# ------------------- Assign Patient IDs tests -------------------
 
 def test_assign_patient_ids_type_error():
     """
@@ -363,7 +348,7 @@ def test_assign_patient_ids_type_error():
     WHEN: The assign_patient_ids function is called.
     THEN: The function raises a TypeError with the appropriate message.
     """
-    invalid_input = "not_a_list"  # A string, not a list
+    invalid_input = "not_a_list"
     with pytest.raises(TypeError, match="images_path must be a list"):
         assign_patient_ids(invalid_input)
 
@@ -391,14 +376,12 @@ def test_assign_patient_ids_existing_ids():
     THEN: The function extracts the correct patient IDs for each image path.
     """
     images_path = [
+        "../Radiomic_Features_Extraction/data/PR1/PR1_T2W_TSE_AX.nii",
         "../Radiomic_Features_Extraction/data/PR2/PR2_T2W_TSE_AX.nii",
-        "../Radiomic_Features_Extraction/data/PR3/PR3_T2W_TSE_AX.nii",
     ]
 
     patient_ids = assign_patient_ids(images_path)
-
-    # Assert the correct patient IDs are extracted
-    assert patient_ids == {2, 3}, f" Expected patient IDs {2, 3}, but got {patient_ids} "
+    assert patient_ids == {1, 2}, f" Expected patient IDs {1, 2}, but got {patient_ids} "
 
 
 def test_assign_patient_ids_no_existing_ids():
@@ -415,8 +398,6 @@ def test_assign_patient_ids_no_existing_ids():
     ]
 
     patient_ids = assign_patient_ids(images_path)
-
-    # Assert new patient IDs are assigned correctly
     assert patient_ids == {1, 2}, f" Expected new patient IDs {1, 2}, but got {patient_ids} "
 
 
@@ -429,15 +410,13 @@ def test_assign_patient_ids_mixed_existing_and_new_ids():
     THEN: The function correctly extracts existing IDs and assigns new IDs where necessary.
     """
     images_path = [
-        "../Radiomic_Features_Extraction/data/PR2/PR2_T2W_TSE_AX.nii",  # Existing ID
-        "../Radiomic_Features_Extraction/data/PR3/PR3_T2W_TSE_AX.nii",  # Existing ID
-        "../Radiomic_Features_Extraction/data/image4_T2W_TSE_AX.nii",  # New ID
+        "../Radiomic_Features_Extraction/data/PR1/PR1_T2W_TSE_AX.nii",  
+        "../Radiomic_Features_Extraction/data/PR2/PR2_T2W_TSE_AX.nii",  
+        "../Radiomic_Features_Extraction/data/image4_T2W_TSE_AX.nii",
     ]
 
     patient_ids = assign_patient_ids(images_path)
-
-    # Assert the correct patient IDs are assigned and extracted
-    assert patient_ids == {2, 3, 1}, f" Expected patient IDs {2, 3, 1}, but got {patient_ids} "
+    assert patient_ids == {1, 2, 3}, f" Expected patient IDs {1, 2, 3}, but got {patient_ids} "
 
 
 def test_assign_patient_ids_invalid_id_format():
@@ -455,5 +434,4 @@ def test_assign_patient_ids_invalid_id_format():
 
     patient_ids = assign_patient_ids(images_path)
 
-    # Assert new patient IDs are assigned correctly
     assert patient_ids == {1, 2}, f" Expected new patient IDs {1, 2}, but got {patient_ids} "

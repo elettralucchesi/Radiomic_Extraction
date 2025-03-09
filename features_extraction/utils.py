@@ -75,18 +75,17 @@ def extract_id(path):
     TypeError
         If `path` is not a string.
     """
-    if path is None or not isinstance(path, str):
+    
+    if not isinstance(path, str):
         raise TypeError("Path must be a string")
 
     filename = os.path.basename(path)
-    matches = re.findall(r'\bPR(\d+)', filename)  # Find all occurrences of "PR<number>"
+    matches = re.findall(r'PR(\d+)', filename)  # Find all occurrences of "PR<number>"
 
     if matches:
-        if len(matches) > 1:
-            print(f"Multiple patient IDs found in '{filename}'. The first occurrence ('PR{matches[0]}') will be used.")
-        return int(matches[0])  # Use the first valid match
+        return int(matches[0])
 
-    if "PR" in filename:  # If "PR" exists but format is incorrect
+    if "PR" in filename:
         print(
             f"Invalid patient ID format in file name '{filename}'. Expected 'PR<number>', e.g., 'PR2'. The ID will be automatically assigned."
         )
@@ -95,8 +94,9 @@ def extract_id(path):
         print(
             f"No valid patient ID found in file name '{filename}'. Expected format: 'PR<number>', e.g., 'PR2'. The ID will be automatically assigned."
         )
-
+        
     return None
+
 
 def new_patient_id(patients_id):
     """
@@ -119,22 +119,23 @@ def new_patient_id(patients_id):
     ------
     TypeError
         If `patients_id` is not a set.
-    ValueError
         If any element in `patients_id` is not an integer.
+    ValueError
         If any patient ID is negative.
     """
     if not isinstance(patients_id, set):
         raise TypeError("patients_id must be a set")
 
     if any(not isinstance(i, int) for i in patients_id):
-        raise ValueError("All patient IDs must be integers")
+        raise TypeError("All patient IDs must be integers")
 
     if any(i < 0 for i in patients_id):
         raise ValueError("Patient IDs cannot be negative")
-
+ 
     new_id = 1
     while new_id in patients_id:
         new_id += 1
+        
     return new_id
 
 
