@@ -80,10 +80,19 @@ def process_slice(mask_slice):
     ----
     Returns a tuple (largest_region_mask, label) containing the largest region found.
     
+        Raises
+    ------
+    TypeError: If mask_slice is not a numpy array.
+    ValueError: If mask_slice is not 2D or contains only invalid values.
     """
 
+    if not isinstance(mask_slice, np.ndarray):
+        raise TypeError("mask_slice must be a numpy array")
+    if mask_slice.ndim != 2:
+        raise ValueError("mask_slice must be a 2D array")
+
     labels = np.unique(mask_slice)
-    labels = labels[labels != 0]  # Exclude background
+    labels = labels[labels != 0]
 
     for lbl in labels:
         lbl = int(lbl)  # Convert numpy.int16 to native Python int

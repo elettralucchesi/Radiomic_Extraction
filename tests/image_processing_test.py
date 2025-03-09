@@ -123,6 +123,7 @@ def test_extract_largest_region_negative_label():
 
 
 # ---------------- Process Slice Tests ----------------
+
 def test_process_slice_single_label():
     """
     Test process_slice with a mask containing a single labeled region.
@@ -131,13 +132,12 @@ def test_process_slice_single_label():
     WHEN: The function is called.
     THEN: It should return the largest region mask and its corresponding label.
     """
-    mask_slice = np.array([
-        [0, 1, 1, 0],
-        [0, 1, 1, 0],
-        [0, 0, 0, 0]
-    ])
+    mask_slice = np.array([[1, 1, 0, 0],
+                     [1, 1, 0, 0],
+                     [1, 0, 1, 1],
+                     [0, 0, 1, 1]]) 
 
-    largest_region_mask, label = process_slice(mask_slice)
+    _, label = process_slice(mask_slice)
     assert label == 1, "Expected label 1, but got a different label."
 
 
@@ -149,20 +149,18 @@ def test_process_slice_single_mask():
     WHEN: The function is called.
     THEN: It should return the largest region mask and its corresponding label.
     """
-    mask_slice = np.array([
-        [0, 1, 1, 0],
-        [0, 1, 1, 0],
-        [0, 0, 0, 0]
-    ])
+    mask_slice = np.array([[1, 1, 0, 0],
+                     [1, 1, 0, 0],
+                     [1, 0, 1, 1],
+                     [0, 0, 1, 1]]) 
 
-    largest_region_mask, label = process_slice(mask_slice)
+    largest_region_mask, _ = process_slice(mask_slice)
 
-    # Verify that the largest region mask matches the expected result
-    expected_region_mask = np.array([
-        [0, 1, 1, 0],
-        [0, 1, 1, 0],
-        [0, 0, 0, 0]
-    ])
+    expected_region_mask = np.array([[1, 1, 0, 0],
+                    [1, 1, 0, 0],
+                    [1, 0, 0, 0],
+                    [0, 0, 0, 0]]) 
+    
     assert np.array_equal(largest_region_mask,
                           expected_region_mask), "The largest region mask does not match the expected result."
 
@@ -181,7 +179,7 @@ def test_process_slice_multiple_labels_label():
         [0, 0, 0, 0, 0, 0, 0]
     ])
 
-    largest_region_mask, label = process_slice(mask_slice)
+    _, label = process_slice(mask_slice)
     assert label in [1, 2], "Expected label 1 or 2, but got a different label."
 
 
@@ -201,20 +199,17 @@ def test_process_slice_multiple_labels_mask():
 
     largest_region_mask, label = process_slice(mask_slice)
 
-    # Define expected region masks for label 1 and label 2
     expected_region_mask_1 = np.array([
         [0, 1, 1, 0, 0, 0, 0],
         [0, 1, 1, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0]
     ])
-
     expected_region_mask_2 = np.array([
         [0, 0, 0, 0, 2, 2, 2],
         [0, 0, 0, 0, 2, 2, 2],
         [0, 0, 0, 0, 0, 0, 0]
     ])
 
-    # Assert that the largest region mask matches the expected result based on the label
     assert np.array_equal(largest_region_mask, expected_region_mask_1) or np.array_equal(largest_region_mask,
                                                                                          expected_region_mask_2), \
         f"Unexpected largest region mask for label {label}."
@@ -222,19 +217,57 @@ def test_process_slice_multiple_labels_mask():
 
 def test_process_slice_returns_none_none():
     """
+    
+    Test that the function returns (None, None) when no labeled regions exist.
+    
     GIVEN a mask slice with no labeled regions (all zeros)
     WHEN process_slice is called
     THEN it should return (None, None)
     """
-    # Create a 2D mask with only background (all values set to zero)
+
     mask_slice = np.zeros((10, 10), dtype=np.uint16)
 
-    # Call the process_slice function
     region_mask, label = process_slice(mask_slice)
 
-    # Check that the result is (None, None) with a single assert
     assert (region_mask, label) == (None, None), f"Expected (None, None), but got ({region_mask}, {label})"
 
+
+def test_process_slice_raises_type_error_if_not_array():
+    """
+    
+    Test that the function raises TypeError when receiving non-array input.
+
+    
+    GIVEN an input that is not a numpy array
+    WHEN process_slice is called
+    THEN it should raise a TypeError
+    """
+    
+    invalid_input = [[0, 1], [1, 0]] 
+    
+    with pytest.raises(TypeError, match="mask_slice must be a numpy array"):
+        process_slice(invalid_input)
+
+def test_process_slice_raises_value_error_if_not_2d():
+    """
+    
+    Test that the function raises ValueError when receiving non-2D array.
+
+    
+    GIVEN an input that is not a 2D array
+    WHEN process_slice is called
+    THEN it should raise a ValueError
+    """
+
+    invalid_input = np.zeros((10, 10, 10))
+    
+    with pytest.raises(ValueError, match="mask_slice must be a 2D array"):
+        process_slice(invalid_input)
+
+
+
+
+# ---------------- Get Slices 2D Tests ----------------
 
 def test_get_slices_2D_valid_length():
     """
