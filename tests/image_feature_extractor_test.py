@@ -4,8 +4,13 @@ from unittest.mock import Mock
 import SimpleITK as sitk
 import logging
 
+
+# ---------------- Get Extractor Test ----------------
+
 def test_get_extractor_invalid_type():
     """
+    Test that a TypeError is raised when the input type is invalid.
+
     GIVEN a non-string yaml_path
     WHEN get_extractor is called
     THEN it should raise a TypeError.
@@ -15,6 +20,8 @@ def test_get_extractor_invalid_type():
 
 def test_get_extractor_empty_string():
     """
+    Test that a ValueError is raised for empty yaml_path.
+    
     GIVEN an empty string as yaml_path
     WHEN get_extractor is called
     THEN it should raise a ValueError.
@@ -22,8 +29,12 @@ def test_get_extractor_empty_string():
     with pytest.raises(ValueError, match="yaml_path cannot be empty."):
         get_extractor("")
 
+
 def test_get_extractor_file_not_found():
     """
+    Test that a FileNotFoundError is raised for non-existent YAML files.
+
+
     GIVEN a non-existent file path
     WHEN get_extractor is called
     THEN it should raise a FileNotFoundError.

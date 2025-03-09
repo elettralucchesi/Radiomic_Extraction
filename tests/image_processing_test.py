@@ -656,6 +656,9 @@ def test_get_patient_image_mask_dict_type_error(imgs_path, masks_path, patient_i
 @patch('features_extraction.image_processing.read_image_and_mask')
 def test_get_patient_image_mask_dict_invalid_mode(mock_read_image):
     """
+    
+    Test to verify that the function raises a ValueError for invalid mode.
+    
     GIVEN: A mode that is not '2D' or '3D'.
     WHEN: The get_patient_image_mask_dict function is called.
     THEN: It should raise a ValueError indicating that only '2D' and '3D' modes are allowed.

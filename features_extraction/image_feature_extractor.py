@@ -31,6 +31,7 @@ def get_extractor(yaml_path):
     FileNotFoundError
         If `yaml_path` does not exist.
     """
+    
     if not isinstance(yaml_path, str):
         raise TypeError("yaml_path must be a string.")
 
@@ -41,10 +42,6 @@ def get_extractor(yaml_path):
         raise FileNotFoundError(f"The file '{yaml_path}' does not exist.")
 
     extractor = featureextractor.RadiomicsFeatureExtractor(yaml_path)
-    # Configure logging for Pyradiomics
-    logger = logging.getLogger('radiomics')
-    logger.setLevel(logging.ERROR)
-
     return extractor
 
 
