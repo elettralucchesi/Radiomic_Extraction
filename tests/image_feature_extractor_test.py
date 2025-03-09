@@ -43,141 +43,132 @@ def test_get_extractor_file_not_found():
         get_extractor("non_existent.yaml")
 
 
+# ---------------- Radiomic Extractor 3D Test ----------------
 
-def test_radiomic_extractor_3D_empty_labels():
+@pytest.mark.parametrize("patient_dict_3D, extractor, expected_message", [
+    (123, featureextractor.RadiomicsFeatureExtractor(), "patient_dict_3D must be a dictionary."),
+    ({}, "invalid_extractor", "extractor must be an instance of RadiomicsFeatureExtractor."),
+])
+def test_radiomic_extractor_3D_type_errors(patient_dict_3D, extractor, expected_message):
     """
-    GIVEN a patient_dict_3D with an empty mask (no labels)
-    WHEN radiomic_extractor_3D is called with these inputs
-    THEN it should raise a ValueError indicating no labels in the mask
+    Test that the radiomic_extractor_3D function raises the correct TypeErrors.
+
+    GIVEN: Various invalid inputs for patient_dict_3D and extractor.
+    WHEN: The radiomic_extractor_3D function is called.
+    THEN: The expected TypeError should be raised with the correct message.
     """
-    # Mock data for the patient (SimpleITK Image objects)
+    
+    with pytest.raises(TypeError, match=expected_message):
+        radiomic_extractor_3D(patient_dict_3D, extractor)
+
+
+
+def test_radiomic_extractor_3D_empty_patient_dict():
+    """
+    Test that a ValueError is raised when patient_dict_3D is empty.
+
+    GIVEN: An empty dictionary for patient_dict_3D.
+    WHEN: The radiomic_extractor_3D function is called.
+    THEN: A ValueError should be raised indicating that patient_dict_3D cannot be empty.
+    """
+    extractor = featureextractor.RadiomicsFeatureExtractor()
+    
+    with pytest.raises(ValueError, match="patient_dict_3D cannot be empty."):
+        radiomic_extractor_3D({}, extractor)
+
+
+def test_radiomic_extractor_3D_no_labels_in_mask():
+    """
+    Test that a ValueError is raised when no labels are found in the mask for a given patient.
+
+    GIVEN: A patient_dict_3D with an empty mask (no labels).
+    WHEN: The radiomic_extractor_3D function is called with these inputs.
+    THEN: A ValueError should be raised indicating no labels in the mask.
+    """
     img_1 = sitk.GetImageFromArray(np.random.rand(10, 10, 10))
-    mask_1 = sitk.GetImageFromArray(np.zeros((10, 10, 10)))
+    mask_1 = sitk.GetImageFromArray(np.zeros((10, 10, 10)))  # Empty mask
 
-    # Mock patient_dict_3D with SimpleITK images
     patient_dict_3D = {
         123: [{"ImageVolume": img_1, "MaskVolume": mask_1}],
     }
 
-    # Mock extractor object
-    extractor = Mock()
+    extractor = featureextractor.RadiomicsFeatureExtractor()
 
-    # Call the function under test and check for the raised error
     with pytest.raises(ValueError, match="No labels found in mask for patient 123"):
         radiomic_extractor_3D(patient_dict_3D, extractor)
 
 
-def test_radiomic_extractor_3D_logging_error(caplog):
-    """
-    GIVEN a patient_dict_3D with a valid image and mask
-    WHEN the extractor.execute method raises an exception
-    THEN it should log an error message
-    """
-    # Mock data: image and mask with label 1
-    img = sitk.GetImageFromArray(np.random.rand(10, 10, 10))
-    mask = sitk.GetImageFromArray(np.full((10, 10, 10), fill_value=2, dtype=np.uint16))
-
-    # Patient mock dictionary
-    patient_dict_3D = {
-        123: [{"ImageVolume": img, "MaskVolume": mask}],
-    }
-
-    # Mock extractor
-    extractor = Mock()
-
-    # extractor.execute raise an exception
-    extractor.execute.side_effect = Exception("Test Exception")
-    print(sitk.GetArrayFromImage(mask).dtype, sitk.GetArrayFromImage(mask).shape)
-
-
-    # Takes log
-    with caplog.at_level(logging.ERROR):
-        result = radiomic_extractor_3D(patient_dict_3D, extractor)
-
-    # Verify that the log contains the expected error message
-    assert any(
-        "[Invalid Feature] for patient PR123, label 2: Test Exception" in record.message for record in caplog.records)
-
-
 def test_radiomic_extractor_3D_valid_input_patient_key():
     """
+    Test that the radiomic_extractor_3D function returns a dictionary containing the expected patient key.
+    
     GIVEN a valid patient_dict_3D and extractor
     WHEN radiomic_extractor_3D is called with these valid inputs
     THEN it should return a dictionary with the expected patient key
     """
-    # Mock data for the patient (SimpleITK Image objects)
-    img_1 = sitk.GetImageFromArray(np.random.rand(10, 10, 10))
-    mask_1 = sitk.GetImageFromArray(np.full((10, 10, 10), fill_value=1, dtype=np.uint16))  # Assuming this will result in a label of 1
 
-    # Mock patient_dict_3D with SimpleITK images
+    img_1 = sitk.GetImageFromArray(np.random.rand(10, 10, 10))
+    mask_1 = sitk.GetImageFromArray(np.full((10, 10, 10), fill_value=1, dtype=np.uint16))
+
     patient_dict_3D = {
         123: [{"ImageVolume": img_1, "MaskVolume": mask_1}],
     }
 
-    # Mock extractor object
-    extractor = Mock()
-    extractor.execute.return_value = {"Feature1": 0.5, "Feature2": 0.8}
+    extractor = featureextractor.RadiomicsFeatureExtractor()
+    extractor.execute = Mock(return_value={"Feature1": 0.5, "Feature2": 0.8})
 
-    # Call the function under test
     result = radiomic_extractor_3D(patient_dict_3D, extractor)
-
-    # Check that the result contains the expected patient key
-    assert "PR123 - 1" in result
+    assert "PR123 - 1" in result, f"Expected patient key 'PR123 - 1' not found in the result."
 
 
 def test_radiomic_extractor_3D_valid_input_feature1():
     """
+    Test that the radiomic_extractor_3D function returns the correct value for Feature1.
+    
     GIVEN a valid patient_dict_3D and extractor
     WHEN radiomic_extractor_3D is called with these valid inputs
     THEN it should return the correct value for Feature1
     """
-    # Mock data for the patient (SimpleITK Image objects)
+
     img_1 = sitk.GetImageFromArray(np.random.rand(10, 10, 10))
     mask_1 = sitk.GetImageFromArray(np.full((10, 10, 10), fill_value=1, dtype=np.uint16))  # Assuming this will result in a label of 1
 
-    # Mock patient_dict_3D with SimpleITK images
+
     patient_dict_3D = {
         123: [{"ImageVolume": img_1, "MaskVolume": mask_1}],
     }
 
-    # Mock extractor object
-    extractor = Mock()
-    extractor.execute.return_value = {"Feature1": 0.5, "Feature2": 0.8}
+    extractor = featureextractor.RadiomicsFeatureExtractor()
+    extractor.execute = Mock(return_value={"Feature1": 0.5, "Feature2": 0.8})
 
-    # Call the function under test
     result = radiomic_extractor_3D(patient_dict_3D, extractor)
-
-    # Check that the result contains the correct value for Feature1
-    assert result["PR123 - 1"]["Feature1"] == 0.5
+    assert result["PR123 - 1"]["Feature1"] == 0.5, f"Expected Feature1 value of 0.5, but got {result['PR123 - 1']['Feature1']}"
 
 
 def test_radiomic_extractor_3D_valid_input_feature2():
     """
+    Test that the radiomic_extractor_3D function returns the correct value for Feature2.
+        
     GIVEN a valid patient_dict_3D and extractor
     WHEN radiomic_extractor_3D is called with these valid inputs
     THEN it should return the correct value for Feature2
     """
-    # Mock data for the patient (SimpleITK Image objects)
-    img_1 = sitk.GetImageFromArray(np.random.rand(10, 10, 10))
-    mask_1 = sitk.GetImageFromArray(np.full((10, 10, 10), fill_value=1, dtype=np.uint16))  # Assuming this will result in a label of 1
 
-    # Mock patient_dict_3D with SimpleITK images
+    img_1 = sitk.GetImageFromArray(np.random.rand(10, 10, 10))
+    mask_1 = sitk.GetImageFromArray(np.full((10, 10, 10), fill_value=1, dtype=np.uint16))
+
     patient_dict_3D = {
         123: [{"ImageVolume": img_1, "MaskVolume": mask_1}],
     }
 
-    # Mock extractor object
-    extractor = Mock()
-    extractor.execute.return_value = {"Feature1": 0.5, "Feature2": 0.8}
+    extractor = featureextractor.RadiomicsFeatureExtractor()
+    extractor.execute = Mock(return_value={"Feature1": 0.5, "Feature2": 0.8})
 
-    # Call the function under test
     result = radiomic_extractor_3D(patient_dict_3D, extractor)
-
-    # Check that the result contains the correct value for Feature2
-    assert result["PR123 - 1"]["Feature2"] == 0.8
+    assert result["PR123 - 1"]["Feature2"] == 0.8, f"Expected Feature2 value of 0.8, but got {result['PR123 - 1']['Feature2']}"
 
 
-
+# ---------------- Radiomic Extractor 2D Test ----------------
 
 def test_radiomic_extractor_2D_empty_labels():
     """

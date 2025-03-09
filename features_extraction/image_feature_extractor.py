@@ -66,22 +66,33 @@ def radiomic_extractor_3D(patient_dict_3D, extractor):
 
     Raises
     ------
+    TypeError
+        If `patient_dict_3D` is not a dictionary.
+        If `extractor` is not an instance of `RadiomicsFeatureExtractor`.
     ValueError
+        If `patient_dict_3D` is empty
         If no labels are found in the mask for a given patient.
     """
     
+    if not isinstance(patient_dict_3D, dict):
+        raise TypeError("patient_dict_3D must be a dictionary.")
+
+    if not isinstance(extractor, featureextractor.RadiomicsFeatureExtractor):
+        raise TypeError("extractor must be an instance of RadiomicsFeatureExtractor.")
+
+    if not patient_dict_3D:
+        raise ValueError("patient_dict_3D cannot be empty.")
+
+    
     all_features_3D = {}
+    errors = []
 
     for pr_id, patient_data in patient_dict_3D.items():
         patient_volume = patient_data[0]
         img = patient_volume["ImageVolume"]
         mask = patient_volume["MaskVolume"]
         
-        # Convert SimpleITK Image to NumPy array for processing
         mask_array = sitk.GetArrayFromImage(mask)
-
-        # Get unique labels, excluding 0 (background label)
-
         labels = np.unique(mask_array)
         labels = labels[labels != 0] 
 
@@ -94,8 +105,9 @@ def radiomic_extractor_3D(patient_dict_3D, extractor):
                 features = {"MaskLabel": lbl, "PatientID": pr_id, **features}
                 all_features_3D[f"PR{pr_id} - {lbl:d}"] = features
             except Exception as e:
-                logging.error(f"[Invalid Feature] for patient PR{pr_id}, label {lbl}: {e}")
-
+                errors.append(f"Invalid Feature for patient PR{pr_id}, label {lbl}: {e}")
+                print(f"Invalid Feature for patient PR{pr_id}, label {lbl}: {e}")
+                
     return all_features_3D
 
 
