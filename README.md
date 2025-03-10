@@ -27,7 +27,7 @@ When choosing **2D Mode**, keep in mind that in some slices, multiple regions wi
 
 ---
 ## Features
----
+
 - **Input**: Accepts 3D MRI images and corresponding segmentation masks in NIfTI (.nii) format.
 - **Radiomic Features**: The extraction process relies on a configuration file (.yaml) to define which features (e.g., texture, shape, intensity) should be computed using Pyradiomics. Users can create their own configuration file by referring to the official Pyradiomics documentation: [Radiomic Features- pyradiomics](https://pyradiomics.readthedocs.io/en/latest/features.html)
 - Modes: Supports extraction in both **3D** and **2D**:
@@ -37,7 +37,7 @@ When choosing **2D Mode**, keep in mind that in some slices, multiple regions wi
 
 ---
 ## Installation
----
+
 ### Prerequisites
 Ensure you have **Python 3.11** installed. The project also uses several Python libraries, which are listed in the `requirements.txt` file.
 ### Clone the Repository
@@ -48,15 +48,16 @@ cd Radiomic_Extraction
 ```
 ---
 ## Install Dependecies 
----
+
 Install the required dependencies by running:
 ```shell
 pip install -r requirements.txt
 ```
 This will install all the necessary Python packages, including Pyradiomics, which is used for feature extraction.
+
 ---
 ## Usage
----
+
 ### Input Data Format
 For feature extraction to work correctly, the input **MRI images** and **segmentation masks** must be in **NIfTI (.nii)** format. Additionally, the segmentation masks should have `seg` included in their filename to differentiate them from the MRI image files.
 ##### Directory Structure
@@ -96,7 +97,7 @@ python -m features_extraction.main
 ```
 ---
 ## Project Structure
----
+
 ```
 Radiomic_Features_Extraction/
 ├── 📂 data                     #  Input MRI images and masks
@@ -111,14 +112,14 @@ Radiomic_Features_Extraction/
 ```
 ---
 ## Testing
----
+
 Unit tests are located in the `tests` directory. To run the tests, use the following command:
 ```bash
-pytest test/
+pytest tests/
 ```
 ---
 ## Results
----
+
 The extracted radiomic features are stored in `output_files/` directory as CSV files. The structure of the CSV files depends on the extraction mode:
 - **3D Mode**: Each row corresponds to a segmented lesion from a patient.
 - **2D Mode**:  Each row corresponds to a single slice of a segmented lesion from a patient.
@@ -132,10 +133,10 @@ For more detailed information on the extracted features, please refer to this we
 
 ---
 ## License
----
+
 This project is licensed under the **MIT License**. See the `LICENSE` file for more details.
 
 ---
 ## Author
----
+
 This project was developed by Elettra Lucchesi
