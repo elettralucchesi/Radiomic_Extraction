@@ -252,7 +252,6 @@ def test_process_slice_returns_none_none():
 
 def test_process_slice_raises_type_error_if_not_array():
     """
-
     Test that the function raises TypeError when receiving non-array input.
 
 
@@ -445,7 +444,7 @@ def test_get_slices_2D_mask_slice():
     """
     image_array = np.random.rand(3, 4, 4)
     mask_array = np.array(
-        [  # 3 slices
+        [
             [[0, 1, 1, 0], [0, 1, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
             [[0, 0, 0, 0], [1, 1, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
             [[2, 2, 0, 0], [2, 2, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
@@ -473,7 +472,7 @@ def test_get_slices_2D_labels():
     """
     image_array = np.random.rand(3, 4, 4)
     mask_array = np.array(
-        [  # 3 slices
+        [
             [[0, 1, 1, 0], [0, 1, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
             [[0, 0, 0, 0], [1, 1, 1, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
             [[2, 2, 0, 0], [2, 2, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
@@ -492,7 +491,6 @@ def test_get_slices_2D_labels():
 
 def test_get_slices_2D_skip_slice_on_none():
     """
-
     Test that slices without valid regions are excluded from processing results.
 
     GIVEN a mask slice where process_slice returns None, None (no region found)
@@ -500,13 +498,12 @@ def test_get_slices_2D_skip_slice_on_none():
     THEN it should skip that slice and not include it in the results
     """
 
-    # Create a 3D image and mask where one slice will have no region
     img = sitk.GetImageFromArray(np.random.rand(3, 10, 10))
     mask = sitk.GetImageFromArray(
         np.array(
             [np.zeros((10, 10)), np.zeros((10, 10)), np.ones((10, 10))], dtype=np.uint16
         )
-    )  # Only last slice has region
+    )
 
     patient_id = 123
 
@@ -524,6 +521,8 @@ def test_get_slices_2D_skip_slice_on_none():
 
 def test_get_volume_3D_return_type():
     """
+    Test that the get_volume_3D function returns a list.
+    
     GIVEN: A 3D image and mask.
     WHEN: The get_volume_3D function is called.
     THEN: The function should return a list containing a dictionary with the correct keys.
@@ -537,20 +536,6 @@ def test_get_volume_3D_return_type():
     assert isinstance(
         result, list
     ), f"Expected result to be a list, but got {type(result)}."
-
-
-def test_get_volume_3D_invalid_image_type():
-    """
-    GIVEN: A non-SimpleITK image (e.g., a numpy array).
-    WHEN: The get_volume_3D function is called.
-    THEN: The function should raise a TypeError indicating that the image is not of type SimpleITK.Image.
-    """
-    invalid_image = np.array([[1, 2], [3, 4]])
-    mask_3d = sitk.Image(3, 3, 3, sitk.sitkUInt8)
-    patient_id = 1234
-
-    with pytest.raises(TypeError, match="Expected 'image' to be a SimpleITK Image"):
-        get_volume_3D(invalid_image, mask_3d, patient_id)
 
 
 @pytest.mark.parametrize(
@@ -584,7 +569,6 @@ def test_get_volume_3D_type_error(image, mask, patient_id, expected_message):
 
 def test_get_volume_3D_invalid_patient_id():
     """
-
     Test that get_volume_3D raises ValueError for invalid patient_id.
 
     GIVEN: A string patient_id.
@@ -798,7 +782,6 @@ def test_get_patient_image_mask_dict_type_error(
 @patch("features_extraction.image_processing.read_image_and_mask")
 def test_get_patient_image_mask_dict_invalid_mode(mock_read_image):
     """
-
     Test to verify that the function raises a ValueError for invalid mode.
 
     GIVEN: A mode that is not '2D' or '3D'.
