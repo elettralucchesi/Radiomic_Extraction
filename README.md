@@ -14,7 +14,7 @@ This allows users to choose between extracting features for each individual slic
 
 ##### ⚠️  2D Mode Considerations
 When choosing **2D Mode**, keep in mind that in some slices, multiple regions with the same label may appear. In such cases, **only the largest region for that label is retained for feature extraction**. This ensures consistency and avoids potential bias caused by multiple smaller segmented regions within the same slice
-___
+---
 ## List of Contents
 - [Features](#features)
 - [Installation](#installation) 
@@ -24,9 +24,9 @@ ___
 - [Results](#results) 
 - [License](license)
 
-___
+---
 ## Features
-___
+---
 - **Input**: Accepts 3D MRI images and corresponding segmentation masks in NIfTI (.nii) format.
 - **Radiomic Features**: The extraction process relies on a configuration file (.yaml) to define which features (e.g., texture, shape, intensity) should be computed using Pyradiomics. Users can create their own configuration file by referring to the official Pyradiomics documentation: [Radiomic Features- pyradiomics](https://pyradiomics.readthedocs.io/en/latest/features.html)
 - Modes: Supports extraction in both **3D** and **2D**:
@@ -53,9 +53,9 @@ Install the required dependencies by running:
 pip install -r requirements.txt
 ```
 This will install all the necessary Python packages, including Pyradiomics, which is used for feature extraction.
-____
+---
 ## Usage
-___
+---
 ### Input Data Format
 For feature extraction to work correctly, the input **MRI images** and **segmentation masks** must be in **NIfTI (.nii)** format. Additionally, the segmentation masks should have `seg` included in their filename to differentiate them from the MRI image files.
 ##### Directory Structure
@@ -124,6 +124,17 @@ The extracted radiomic features are stored in `output_files/` directory as CSV f
 
 The extracted features can then be used for further analysis or machine learning tasks.
 
-The files you see in the `output_files/` directory serve as an example result, generated using the segmentation masks and MRI images stored in the `data/` directory.
-### License
+The files you see in the `output_files/` directory serve as an example result, generated using the segmentation masks and MRI images stored in the `data/` directory. 
+**Please note that the example in the output files is based on the default configuration of 3D mode, which is specified in the `config.ini` file. Additionally, the radiomic features are extracted using the provided `pyradiomics_config.yaml` file included as an example.**
+This configuration file is set up for a comprehensive radiomic feature extraction, including texture features (GLCM, GLRLM, GLSZM, GLDM, NGTDM), first-order statistics, and shape features. The extraction is performed on the original image and also on transformed images using Wavelet and Laplacian of Gaussian (LoG) filters. 
+For more detailed information on the extracted features, please refer to this website: [Radiomic Features- pyradiomics](https://pyradiomics.readthedocs.io/en/latest/features.html)
+
+---
+## License
+---
 This project is licensed under the **MIT License**. See the `LICENSE` file for more details.
+
+---
+## Author
+---
+This project was developed by Elettra Lucchesi
