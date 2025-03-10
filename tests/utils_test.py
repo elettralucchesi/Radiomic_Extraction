@@ -129,10 +129,12 @@ def test_extract_id_invalid_format_with_pr():
 
     GIVEN: A filename with an incorrectly formatted patient ID containing 'PR'.
     WHEN: The extract_id function is called.
-    THEN: The function prints an error message and returns None.
+    THEN: The function issue a warning and returns None.
     """
-    result = extract_id("path/to/PR_2_image.nii")
-    assert result is None, f"Expected None, but got {result}"
+    with pytest.warns(
+        UserWarning, match="Invalid patient ID format in file name 'PR_2_image.nii'"
+    ):
+        extract_id("path/to/PR_2_image.nii")
 
 
 def test_extract_id_invalid_number_before_pr():
@@ -141,10 +143,13 @@ def test_extract_id_invalid_number_before_pr():
 
     GIVEN: A filename where the number precedes 'PR' (e.g., '2PR').
     WHEN: The extract_id function is called.
-    THEN: The function prints an error message and returns None.
+    THEN: The function issues a warning and returns None.
     """
-    result = extract_id("path/to/2PR_image.nii")
-    assert result is None, f"Expected None, but got {result}"
+    with pytest.warns(
+        UserWarning,
+        match="Invalid patient ID format in file name '2PR_image.nii'. Expected 'PR<number>', e.g., 'PR2'. The ID will be automatically assigned.",
+    ):
+        extract_id("path/to/2PR_image.nii")
 
 
 def test_extract_id_no_pr():
@@ -153,10 +158,13 @@ def test_extract_id_no_pr():
 
     GIVEN: A filename without a patient ID or 'PR' prefix.
     WHEN: The extract_id function is called.
-    THEN: The function prints an error message and returns None.
+    THEN: The function issues a warning and returns None.
     """
-    result = extract_id("path/to/image_without_id.nii")
-    assert result is None, f"Expected None, but got {result}"
+    with pytest.warns(
+        UserWarning,
+        match="No valid patient ID found in file name 'image_without_id.nii'",
+    ):
+        extract_id("path/to/image_without_id.nii")
 
 
 @pytest.mark.parametrize("invalid_input", [12345, None])

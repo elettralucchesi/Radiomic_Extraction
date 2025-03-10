@@ -1,6 +1,7 @@
 import os
 import glob
 import re
+import warnings
 
 
 def get_path_images_masks(path):
@@ -58,8 +59,8 @@ def extract_id(path):
 
     This function retrieves the patient ID from a given file path by searching for
     occurrences of the pattern 'PR<number>' in the file name. If multiple IDs are found,
-    only the first occurrence is used. If the format is incorrect or no ID is found,
-    a warning message is printed, and `None` is returned.
+    only the first occurrence is used. If the format is incorrect
+    or no ID is found, a warning is issued, and `None` is returned.
 
     Parameters
     ----------
@@ -76,6 +77,12 @@ def extract_id(path):
     ------
     TypeError
         If `path` is not a string.
+        
+    Warns
+    -----
+    UserWarning
+        If the filename contains 'PR' with invalid numeric format (e.g., 'PRabc')
+        If no 'PR' pattern is found in the filename
     """
 
     if not isinstance(path, str):
@@ -88,13 +95,15 @@ def extract_id(path):
         return int(matches[0])
 
     if "PR" in filename:
-        print(
-            f"Invalid patient ID format in file name '{filename}'. Expected 'PR<number>', e.g., 'PR2'. The ID will be automatically assigned."
+        warnings.warn(
+            f"Invalid patient ID format in file name '{filename}'. Expected 'PR<number>', e.g., 'PR2'. The ID will be automatically assigned.",
+            category=UserWarning,
         )
         return None
     else:
-        print(
-            f"No valid patient ID found in file name '{filename}'. Expected format: 'PR<number>', e.g., 'PR2'. The ID will be automatically assigned."
+        warnings.warn(
+            f"No valid patient ID found in file name '{filename}'. Expected format: 'PR<number>', e.g., 'PR2'. The ID will be automatically assigned.",
+            category=UserWarning,
         )
 
     return None
