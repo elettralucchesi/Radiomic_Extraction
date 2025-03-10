@@ -30,25 +30,26 @@ def extract_largest_region(mask_slice, label_value):
         If `mask_slice` is an integer and `label_value` is a numpy array.
         If `label_value` is not an integer.
     ValueError
-        If `mask_slice` is not 2D. 
+        If `mask_slice` is not 2D.
         If `label_value` is negative.
     """
 
     if isinstance(mask_slice, int) and isinstance(label_value, np.ndarray):
         raise TypeError(
-            "Inputs appear to be swapped. Expected mask_slice as a numpy array and label_value as an integer.")
+            "Inputs appear to be swapped. Expected mask_slice as a numpy array and label_value as an integer."
+        )
     if not isinstance(mask_slice, np.ndarray):
         raise TypeError("mask_slice must be a numpy array")
     if mask_slice.ndim != 2:
         raise ValueError("mask_slice must be a 2D array")
-    
+
     if not isinstance(label_value, int):
         raise TypeError("Label value must be an integer")
     if label_value < 0:
         raise ValueError("Label value cannot be negative")
 
     # Create a binary mask for the specified label
-    region_mask = (mask_slice == label_value)
+    region_mask = mask_slice == label_value
 
     # Label the connected components in the binary mask
     labeled_region, num_labels = label(region_mask)
@@ -83,7 +84,7 @@ def process_slice(mask_slice):
     THEN
     ----
     Returns a tuple (largest_region_mask, label) containing the largest region found.
-    
+
         Raises
     ------
     TypeError: If mask_slice is not a numpy array.
@@ -103,7 +104,7 @@ def process_slice(mask_slice):
         largest_region_mask = extract_largest_region(mask_slice, lbl)
         if largest_region_mask is not None:
             return largest_region_mask, lbl
-    
+
     # If no region found
     return None, None
 
@@ -143,13 +144,19 @@ def get_slices_2D(image, mask, patient_id):
     """
 
     if not isinstance(image, sitk.Image):
-        raise TypeError(f"Expected 'image' to be a SimpleITK Image, but got {type(image)}.")
+        raise TypeError(
+            f"Expected 'image' to be a SimpleITK Image, but got {type(image)}."
+        )
 
     if not isinstance(mask, sitk.Image):
-        raise TypeError(f"Expected 'mask' to be a SimpleITK Image, but got {type(mask)}.")
+        raise TypeError(
+            f"Expected 'mask' to be a SimpleITK Image, but got {type(mask)}."
+        )
 
     if not isinstance(patient_id, int):
-        raise ValueError(f"Expected 'patient_id' to be a int, but got {type(patient_id)}.")
+        raise ValueError(
+            f"Expected 'patient_id' to be a int, but got {type(patient_id)}."
+        )
 
     image_array = sitk.GetArrayFromImage(image)
     mask_array = sitk.GetArrayFromImage(mask)
@@ -163,15 +170,17 @@ def get_slices_2D(image, mask, patient_id):
         if new_mask_slice is None:
             continue
 
-        new_mask_slice_image  = sitk.GetImageFromArray(new_mask_slice)
+        new_mask_slice_image = sitk.GetImageFromArray(new_mask_slice)
         image_slice_image = sitk.GetImageFromArray(image_slice)
-        patient_slices.append({
-            'PatientID': f"PR{patient_id}",
-            'Label': mask_label,
-            'SliceIndex': slice_idx,
-            'ImageSlice':  image_slice_image,
-            'MaskSlice': new_mask_slice_image
-        })
+        patient_slices.append(
+            {
+                "PatientID": f"PR{patient_id}",
+                "Label": mask_label,
+                "SliceIndex": slice_idx,
+                "ImageSlice": image_slice_image,
+                "MaskSlice": new_mask_slice_image,
+            }
+        )
 
     return patient_slices
 
@@ -216,15 +225,10 @@ def get_volume_3D(image, mask, patient_id):
 
     if not isinstance(patient_id, int):
         raise ValueError("Expected 'patient_id' to be a int.")
-    
 
-    return [{
-        'PatientID': f"PR{patient_id}",
-        'ImageVolume': image,
-        'MaskVolume': mask
-    }]
- 
- 
+    return [{"PatientID": f"PR{patient_id}", "ImageVolume": image, "MaskVolume": mask}]
+
+
 def read_image_and_mask(image_path, mask_path):
     """
     Read an image and its corresponding mask using SimpleITK.
@@ -307,20 +311,27 @@ def get_patient_image_mask_dict(imgs_path, masks_path, patient_ids, mode):
         If `imgs_path` or `masks_path` are not lists of strings.
         If `patient_ids` is not a set of integers.
     """
-    
-    if not isinstance(imgs_path, list) or not all(isinstance(path, str) for path in imgs_path):
+
+    if not isinstance(imgs_path, list) or not all(
+        isinstance(path, str) for path in imgs_path
+    ):
         raise TypeError("imgs_path must be a list of strings.")
-    if not isinstance(masks_path, list) or not all(isinstance(path, str) for path in masks_path):
+    if not isinstance(masks_path, list) or not all(
+        isinstance(path, str) for path in masks_path
+    ):
         raise TypeError("masks_path must be a list of strings.")
-    if not isinstance(patient_ids, set) or not all(isinstance(pid, int) for pid in patient_ids):
+    if not isinstance(patient_ids, set) or not all(
+        isinstance(pid, int) for pid in patient_ids
+    ):
         raise TypeError("patient_ids must be a set of integers.")
 
     if len(imgs_path) == 0 or len(masks_path) == 0 or len(patient_ids) == 0:
         raise ValueError("The imgs_path, masks_path, and patient_ids cannot be empty.")
 
     if len(imgs_path) != len(masks_path) or len(imgs_path) != len(patient_ids):
-        raise ValueError("The number of images, masks, and patient_ids must be the same.")
-
+        raise ValueError(
+            "The number of images, masks, and patient_ids must be the same."
+        )
 
     patient_dict = {}
 

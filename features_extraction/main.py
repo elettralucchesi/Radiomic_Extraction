@@ -28,9 +28,11 @@ radiomic_dataframe = pd.DataFrame(radiomic_dictionary).T.reset_index()
 
 
 if mode == "2D":
-    radiomic_dataframe.rename(columns={'index': 'PatientID - Slice - Label'}, inplace=True)
+    radiomic_dataframe.rename(
+        columns={"index": "PatientID - Slice - Label"}, inplace=True
+    )
 else:
-    radiomic_dataframe.rename(columns={'index': 'PatientID - Label'}, inplace=True)
+    radiomic_dataframe.rename(columns={"index": "PatientID - Label"}, inplace=True)
 
 output_file = os.path.join(output_path, f"{mode}_Radiomic_Features.csv")
 radiomic_dataframe.to_csv(output_file, sep=",", header=True, index=False)
