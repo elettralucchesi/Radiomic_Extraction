@@ -238,52 +238,25 @@ def test_new_patient_id_large_numbers():
     assert result == 1, f"Expected new ID: 1, but got: {result}"
 
 
-def test_new_patient_id_invalid_type_list():
+@pytest.mark.parametrize(
+    "invalid_input, expected_error, error_message",
+    [
+        ([1, 2, 3], TypeError, "patients_id must be a set"),
+        ("123", TypeError, "patients_id must be a set"),
+        ({1, 2, "three"}, TypeError, "All patient IDs must be integers"),
+        ({1, 2, 3.5}, TypeError, "All patient IDs must be integers"),
+    ],
+)
+def test_new_patient_id_invalid_input(invalid_input, expected_error, error_message):
     """
-    Test that the function raises a TypeError if the input is a list instead of a set.
+    Test that new_patient_id raises TypeError or ValueError for invalid inputs.
 
-    GIVEN: A list of patient IDs instead of a set.
+    GIVEN: An invalid input type or a set with non-integer values.
     WHEN: The new_patient_id function is called.
-    THEN: The function raises a TypeError.
+    THEN: The function raises the appropriate error with the correct message.
     """
-    with pytest.raises(TypeError, match="patients_id must be a set"):
-        new_patient_id([1, 2, 3])
-
-
-def test_new_patient_id_invalid_type_string():
-    """
-    Test that the function raises a TypeError if the input is a string instead of a set.
-
-    GIVEN: A string instead of a set.
-    WHEN: The new_patient_id function is called.
-    THEN: The function raises a TypeError.
-    """
-    with pytest.raises(TypeError, match="patients_id must be a set"):
-        new_patient_id("123")
-
-
-def test_new_patient_id_non_integer_values_string():
-    """
-    Test that the function raises a ValueError if the set contains a string instead of integers.
-
-    GIVEN: A set containing a string value.
-    WHEN: The new_patient_id function is called.
-    THEN: The function raises a ValueError.
-    """
-    with pytest.raises(TypeError, match="All patient IDs must be integers"):
-        new_patient_id({1, 2, "three"})
-
-
-def test_new_patient_id_non_integer_values_float():
-    """
-    Test that the function raises a ValueError if the set contains a float instead of integers.
-
-    GIVEN: A set containing a float value.
-    WHEN: The new_patient_id function is called.
-    THEN: The function raises a ValueError.
-    """
-    with pytest.raises(TypeError, match="All patient IDs must be integers"):
-        new_patient_id({1, 2, 3.5})
+    with pytest.raises(expected_error, match=error_message):
+        new_patient_id(invalid_input)
 
 
 def test_new_patient_id_negative_values():
