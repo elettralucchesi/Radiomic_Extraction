@@ -159,28 +159,17 @@ def test_extract_id_no_pr():
     assert result is None, f"Expected None, but got {result}"
 
 
-def test_extract_id_non_string_path():
+@pytest.mark.parametrize("invalid_input", [12345, None])
+def test_extract_id_invalid_input(invalid_input):
     """
-    Test that the function raises a TypeError when provided with a non-string input.
+    Test that extract_id raises a TypeError when provided with a non-string input.
 
-    GIVEN: A non-string input as path.
+    GIVEN: An invalid input (non-string or None).
     WHEN: The extract_id function is called.
-    THEN: The function raises a TypeError.
+    THEN: The function raises a TypeError with the appropriate error message.
     """
     with pytest.raises(TypeError, match="Path must be a string"):
-        extract_id(12345)
-
-
-def test_extract_id_none_input():
-    """
-    Test that the function raises a TypeError when provided with a None input.
-
-    GIVEN: A None input.
-    WHEN: The extract_id function is called.
-    THEN: The function raises a TypeError.
-    """
-    with pytest.raises(TypeError, match="Path must be a string"):
-        extract_id(None)
+        extract_id(invalid_input)
 
 
 def test_extract_id_multiple_valid_pr():
