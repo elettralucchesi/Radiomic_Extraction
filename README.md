@@ -79,9 +79,10 @@ Organize you files in the following structure:
 You need to configure the path to the input data and the output directory in the `config.ini` file. It should be modified as follows:
 Edit the  file to specify:
 ```shell
-[data]
+[paths]
 data_path = ./data/*           # Path to patient folders containing MRI images and segmentation masks folders
 output_path = ./output_files/  # Directory to save extracted features .csv files
+[settings]
 mode = 3D                      # Mode for feature extraction: '3D' or '2D'
 radiomic_config_file = ./data/pyradiomics_config.yaml  # Path to Pyradiomics configuration YAML file
 ```
