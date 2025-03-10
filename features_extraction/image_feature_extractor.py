@@ -71,6 +71,11 @@ def radiomic_extractor_3D(patient_dict_3D, extractor):
     ValueError
         If `patient_dict_3D` is empty
         If no labels are found in the mask for a given patient.
+    
+    Warns
+    -----
+    UserWarning
+        If feature extraction fails for a patient, a warning is issued.
     """
 
     if not isinstance(patient_dict_3D, dict):
@@ -135,6 +140,11 @@ def radiomic_extractor_2D(patient_dict_2D, extractor):
     ValueError
         If `patient_dict_2D` is empty
         If no labels are found in the mask for a given patient.
+        
+    Warns
+    -----
+    UserWarning
+        If feature extraction fails for a patient, a warning is issued.
     """
 
     if not isinstance(patient_dict_2D, dict):
@@ -147,7 +157,6 @@ def radiomic_extractor_2D(patient_dict_2D, extractor):
         raise ValueError("patient_dict_2D cannot be empty.")
 
     all_features_2D = {}
-    errors = []
 
     for patient_id, patient_slices in patient_dict_2D.items():
         for slice_data in patient_slices:
@@ -172,10 +181,9 @@ def radiomic_extractor_2D(patient_dict_2D, extractor):
                 key = f"{patient_id}-{index}-{lbl}"
                 all_features_2D[key] = features
             except Exception as e:
-                errors.append(
-                    f"Invalid Feature for patient PR{patient_id}, label {lbl}: {e}"
-                )
-                print(f"Invalid Feature for patient PR{pr_id}, label {lbl}: {e}")
+                warning_message = f"Invalid Feature for patient PR{patient_id}, label {lbl}: {e}"
+                warnings.warn(warning_message, category=UserWarning)
+
     return all_features_2D
 
 

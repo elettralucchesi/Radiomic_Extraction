@@ -4,7 +4,6 @@ from unittest.mock import Mock
 import SimpleITK as sitk
 
 
-
 # ---------------- Get Extractor Test ----------------
 
 
@@ -150,9 +149,7 @@ def test_radiomic_extractor_3D_valid_input_feature1():
     """
 
     img_1 = sitk.GetImageFromArray(np.random.rand(3, 3, 3))
-    mask_1 = sitk.GetImageFromArray(
-        np.full((3, 3, 3), fill_value=1, dtype=np.uint16)
-    )  
+    mask_1 = sitk.GetImageFromArray(np.full((3, 3, 3), fill_value=1, dtype=np.uint16))
 
     patient_dict_3D = {
         123: [{"ImageVolume": img_1, "MaskVolume": mask_1}],
@@ -192,8 +189,8 @@ def test_radiomic_extractor_3D_valid_input_feature2():
     ), f"Expected Feature2 value of 0.8, but got {result['PR123 - 1']['Feature2']}"
 
 
-
 import warnings
+
 
 def test_radiomic_extractor_3D_captures_warnings():
     """
@@ -214,11 +211,12 @@ def test_radiomic_extractor_3D_captures_warnings():
     extractor = featureextractor.RadiomicsFeatureExtractor()
     extractor.execute = Mock(side_effect=RuntimeError("Feature extraction failed"))
 
-    expected_warning_message = "Invalid Feature for patient PR123, label 1: Feature extraction failed"
+    expected_warning_message = (
+        "Invalid Feature for patient PR123, label 1: Feature extraction failed"
+    )
 
     with pytest.warns(UserWarning, match=expected_warning_message):
         radiomic_extractor_3D(patient_dict_3D, extractor)
-
 
 
 # ---------------- Radiomic Extractor 2D Test ----------------
@@ -370,6 +368,33 @@ def test_radiomic_extractor_2D_valid_input_feature2():
     assert (
         result["123-0-1"]["Feature2"] == 0.8
     ), f"Expected Feature2 value of 0.8, but got {result['123-0-1']['Feature2']}"
+
+
+def test_radiomic_extractor_2D_captures_warnings():
+    """
+    Test that radiomic_extractor_2D generates a warning when an exception occurs.
+
+    GIVEN a patient_dict_2D with a valid image and mask but an extractor that raises an exception
+    WHEN radiomic_extractor_2D is called
+    THEN it should generate a warning.
+    """
+
+    img_1 = sitk.GetImageFromArray(np.random.rand(3, 3))
+    mask_1 = sitk.GetImageFromArray(np.full((3, 3), fill_value=1, dtype=np.uint16))
+
+    patient_dict_2D = {
+        123: [{"ImageSlice": img_1, "MaskSlice": mask_1, "Label": 1, "SliceIndex": 0}],
+    }
+
+    extractor = featureextractor.RadiomicsFeatureExtractor()
+    extractor.execute = Mock(side_effect=RuntimeError("Feature extraction failed"))
+
+    expected_warning_message = (
+        "Invalid Feature for patient PR123, label 1: Feature extraction failed"
+    )
+
+    with pytest.warns(UserWarning, match=expected_warning_message):
+        radiomic_extractor_2D(patient_dict_2D, extractor)
 
 
 # ---------------- Extract Radiomic Features Test ----------------
