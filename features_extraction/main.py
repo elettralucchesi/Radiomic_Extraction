@@ -1,13 +1,13 @@
 import os
 import pandas as pd
 import configparser
-from utils import get_path_images_masks, assign_patient_ids
-from image_processing import get_patient_image_mask_dict
-from image_feature_extractor import get_extractor, extract_radiomic_features
+from features_extraction.utils import get_path_images_masks, assign_patient_ids
+from features_extraction.image_processing import get_patient_image_mask_dict
+from features_extraction.image_feature_extractor import get_extractor, extract_radiomic_features
 
 # Read the configuration .ini file
 config = configparser.ConfigParser()
-config.read("../config.ini")
+config.read("./config.ini")
 
 data_path = config["paths"]["data_path"]
 output_path = config["paths"]["output_path"]
