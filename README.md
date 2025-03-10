@@ -11,6 +11,9 @@ Radiomic features are key in medical imaging for quantifying the texture and pat
 - **2D Mode**: Features are computed from each individual slice of the segmented lesion volume.
 
 This allows users to choose between extracting features for each individual slice or for the entire lesion volume, depending on their specific needs.
+
+##### ⚠️  2D Mode Considerations
+When choosing **2D Mode**, keep in mind that in some slices, multiple regions with the same label may appear. In such cases, **only the largest region for that label is retained for feature extraction**. This ensures consistency and avoids potential bias caused by multiple smaller segmented regions within the same slice
 ___
 ## List of Contents
 - [Features](#features)
@@ -101,9 +104,9 @@ Radiomic_Features_Extraction/
 ├── 📂 tests                    #  Unit tests for validation
 ├── .gitignore                  #  Git ignore file
 ├── LICENSE                     #  License file
-├── README.md                   # Project documentation
-├── config.ini                  # Configuration file
-├── requirements.txt            # Python dependencies
+├── README.md                   #  Project documentation
+├── config.ini                  #  Configuration file
+├── requirements.txt            #  Python dependencies
 ```
 ---
 ## Testing
