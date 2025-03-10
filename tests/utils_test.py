@@ -391,3 +391,24 @@ def test_assign_patient_ids_invalid_id_format():
         1,
         2,
     }, f" Expected new patient IDs {1, 2}, but got {patient_ids} "
+
+
+def test_assign_patient_ids_warning():
+    """
+    Test that assign_patient_ids issues a warning and assigns new IDs when patient IDs are missing.
+
+    GIVEN a list of image paths where some IDs are not found
+    WHEN assign_patient_ids is called
+    THEN it issues a warning and assigns new patient IDs.
+    """
+    images_path = [
+        "path/to/PR12345_image.nii",
+        "path/to/invalid_image_1.nii",
+        "path/to/PR67890_image.nii",
+    ]
+
+    with pytest.warns(
+        UserWarning,
+        match="Patient ID not found, automatically assigning new ID for path/to/invalid_image_1.nii",
+    ):
+        assign_patient_ids(images_path)

@@ -77,7 +77,7 @@ def extract_id(path):
     ------
     TypeError
         If `path` is not a string.
-        
+
     Warns
     -----
     UserWarning
@@ -174,6 +174,11 @@ def assign_patient_ids(images_path):
         If `images_path` is not a list.
     ValueError
         If `images_path` is empty.
+
+    Warns
+    -----
+    UserWarning
+        If no valid patient ID is found in the file name and a new ID is automatically assigned.
     """
     if not isinstance(images_path, list):
         raise TypeError("images_path must be a list")
@@ -186,8 +191,9 @@ def assign_patient_ids(images_path):
         patient_id = extract_id(im_path)
         if patient_id is None:
             patient_id = new_patient_id(patient_ids)
-            print(
-                f"Patient ID not found, automatically assigning new ID, for {im_path} id {patient_id}"
+            warnings.warn(
+                f"Patient ID not found, automatically assigning new ID for {im_path}, assigned ID: {patient_id}",
+                category=UserWarning,
             )
         patient_ids.add(patient_id)
 
