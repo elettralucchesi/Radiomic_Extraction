@@ -21,6 +21,7 @@ When choosing **2D Mode**, keep in mind that in some slices, multiple regions wi
 - [Installation](#installation) 
 - [Usage](#usage)
 - [Project Structure](#project-structure)
+- [Utilities](#utilities)
 - [Testing](#testing)
 - [Results](#results) 
 - [License](license)
@@ -110,6 +111,15 @@ Radiomic_Features_Extraction/
 ├── config.ini                  #  Configuration file
 ├── requirements.txt            #  Python dependencies
 ```
+
+---
+## Utilities
+
+- **The** `utils.py` **file** contains functions to manage MRI image and mask data, ensuring correct pairing of images and masks, extracting and assigning patient IDs, and maintaining consistency in data preparation for feature extraction.
+- **The** `image_processing.py` **file** defines a set of functions for processing medical image slices and corresponding masks. It includes functions to extract the largest connected region of a specific label from a binary mask slice, process slices to find the largest region for each label, and extract 2D slices or 3D volumes of images and masks. The functions also handle reading images and masks from disk and organizing them into a dictionary, with the ability to process either 2D slices or full 3D volumes, based on the specified mode.
+- **The** `image_feature_extractor.py` **file** extracts radiomic features from 3D and 2D medical images using the radiomics library. It provides functions to initialize the feature extractor and process patient data to extract features from labeled mask regions. The script supports both 2D and 3D image data and handles errors and warnings during feature extraction.
+- **The** `main.py` **file** reads a configuration file to set paths and parameters, extracts radiomic features from 2D or 3D medical images, and saves the results in a CSV file. It integrates functions to load images and masks, process patient data, and extract features using a specified configuration. The output is saved to the specified directory, with the mode (2D or 3D) determining the format of the results.
+
 ---
 ## Testing
 
