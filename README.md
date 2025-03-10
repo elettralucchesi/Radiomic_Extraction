@@ -74,6 +74,7 @@ Organize you files in the following structure:
 ├── pyradiomics_config.yaml     # Pyradiomics configuration file
 ```
 - A **YAML configuration file** for feature extraction should be provided in the `data/` folder (e.g., `pyradiomics_config.yaml`).
+
 ⚠️ **Important**: Inside each patient folder (e.g., `PR1`, `PR2`), there should be **only one MRI image and one segmentation mask**. The mask file must contain the word `seg` in its name (e.g., `PR1_seg.nii`). This ensures that the image and its corresponding mask are correctly paired for feature extraction.
 
 ### Configuration
