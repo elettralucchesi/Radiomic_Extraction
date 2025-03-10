@@ -14,6 +14,7 @@ This allows users to choose between extracting features for each individual slic
 
 ##### ⚠️  2D Mode Considerations
 When choosing **2D Mode**, keep in mind that in some slices, multiple regions with the same label may appear. In such cases, **only the largest region for that label is retained for feature extraction**. This ensures consistency and avoids potential bias caused by multiple smaller segmented regions within the same slice
+
 ---
 ## List of Contents
 - [Features](#features)
