@@ -1,6 +1,6 @@
 import os
 import glob
-import re 
+import re
 
 
 def get_path_images_masks(path):
@@ -36,16 +36,18 @@ def get_path_images_masks(path):
     if not isinstance(path, str):
         raise TypeError("Path must be a string")
 
-    files = glob.glob(os.path.join(path, '*.nii'))
+    files = glob.glob(os.path.join(path, "*.nii"))
 
     if not files:
         raise ValueError("The directory is empty or contains no .nii files")
 
-    img = [f for f in files if not f.endswith('seg.nii')]
-    mask = [f for f in files if f.endswith('seg.nii')]
+    img = [f for f in files if not f.endswith("seg.nii")]
+    mask = [f for f in files if f.endswith("seg.nii")]
 
     if len(img) != len(mask):
-        raise ValueError("The number of image files does not match the number of mask files")
+        raise ValueError(
+            "The number of image files does not match the number of mask files"
+        )
 
     return img, mask
 
@@ -75,12 +77,12 @@ def extract_id(path):
     TypeError
         If `path` is not a string.
     """
-    
+
     if not isinstance(path, str):
         raise TypeError("Path must be a string")
 
     filename = os.path.basename(path)
-    matches = re.findall(r'PR(\d+)', filename)  # Find all occurrences of "PR<number>"
+    matches = re.findall(r"PR(\d+)", filename)  # Find all occurrences of "PR<number>"
 
     if matches:
         return int(matches[0])
@@ -94,7 +96,7 @@ def extract_id(path):
         print(
             f"No valid patient ID found in file name '{filename}'. Expected format: 'PR<number>', e.g., 'PR2'. The ID will be automatically assigned."
         )
-        
+
     return None
 
 
@@ -131,11 +133,11 @@ def new_patient_id(patients_id):
 
     if any(i < 0 for i in patients_id):
         raise ValueError("Patient IDs cannot be negative")
- 
+
     new_id = 1
     while new_id in patients_id:
         new_id += 1
-        
+
     return new_id
 
 
@@ -175,7 +177,9 @@ def assign_patient_ids(images_path):
         patient_id = extract_id(im_path)
         if patient_id is None:
             patient_id = new_patient_id(patient_ids)
-            print(f"Patient ID not found, automatically assigning new ID, for {im_path} id {patient_id}")
+            print(
+                f"Patient ID not found, automatically assigning new ID, for {im_path} id {patient_id}"
+            )
         patient_ids.add(patient_id)
 
     return patient_ids
