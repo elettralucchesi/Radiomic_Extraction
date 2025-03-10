@@ -1,6 +1,8 @@
 import pytest
-import re
 from features_extraction.utils import *
+
+
+# ------------------- Get Path Images Masks tests -------------------
 
 
 @pytest.fixture
@@ -58,103 +60,49 @@ def test_get_path_images_masks_masks(setup_test_files):
     ), f"Expected masks: {expected_mask}, but got: {mask}"
 
 
-def test_get_path_images_masks_invalid_int():
+@pytest.mark.parametrize("invalid_path", [123, None])
+def test_get_path_images_masks_invalid_path(invalid_path):
     """
-    Test if passing an integer as path raises TypeError.
+    Test if passing an invalid path type raises a TypeError.
 
-    GIVEN: An invalid path type (integer).
-    WHEN: The get_path_images_masks function is called with an integer.
+    GIVEN: An invalid path type (e.g., integer or None).
+    WHEN: The get_path_images_masks function is called with the invalid path.
     THEN: The function raises a TypeError with the appropriate error message.
     """
     with pytest.raises(TypeError, match="Path must be a string"):
-        get_path_images_masks(123)
+        get_path_images_masks(invalid_path)
 
 
-def test_get_path_images_masks_invalid_none():
+@pytest.mark.parametrize(
+    "files, expected_error",
+    [
+        ([], "The directory is empty or contains no .nii files"),
+        (
+            ["file1.txt", "file2.csv", "file3.jpg"],
+            "The directory is empty or contains no .nii files",
+        ),
+        (
+            ["patient1.nii", "patient2.nii", "patient1_seg.nii"],
+            "The number of image files does not match the number of mask files",
+        ),
+        (
+            ["patient1.nii", "patient1_seg.nii", "patient2_seg.nii"],
+            "The number of image files does not match the number of mask files",
+        ),
+    ],
+)
+def test_get_path_images_masks_invalid_cases(tmp_path, files, expected_error):
     """
-    Test if passing None as path raises TypeError.
+    Test if passing invalid directory structures raises ValueError.
 
-    GIVEN: An invalid path type (None).
-    WHEN: The get_path_images_masks function is called with None.
-    THEN: The function raises a TypeError with the appropriate error message.
-    """
-    with pytest.raises(TypeError, match="Path must be a string"):
-        get_path_images_masks(None)
-
-
-def test_get_path_images_masks_empty_directory(tmp_path):
-    """
-    Test if passing an empty directory raises ValueError.
-
-    GIVEN: An empty directory.
+    GIVEN: A directory with an invalid structure (e.g., empty, no .nii files, or mismatched image/mask counts).
     WHEN: The get_path_images_masks function is called on the directory.
     THEN: The function raises a ValueError with the appropriate error message.
     """
-    with pytest.raises(
-        ValueError, match="The directory is empty or contains no .nii files"
-    ):
-        get_path_images_masks(str(tmp_path))
-
-
-def test_get_path_images_masks_no_nii_files(tmp_path):
-    """
-    Test if a directory without .nii files raises ValueError.
-
-    GIVEN: A directory with files, but none with .nii extension.
-    WHEN: The get_path_images_masks function is called on the directory.
-    THEN: The function raises a ValueError with the appropriate error message.
-    """
-
-    non_nii_files = ["file1.txt", "file2.csv", "file3.jpg"]
-
-    for file in non_nii_files:
+    for file in files:
         (tmp_path / file).write_text("test")
 
-    with pytest.raises(
-        ValueError, match="The directory is empty or contains no .nii files"
-    ):
-        get_path_images_masks(str(tmp_path))
-
-
-def test_get_path_images_masks_mismatched_files(tmp_path):
-    """
-    Test if a directory with mismatched image and mask files raises ValueError.
-
-    GIVEN: A directory containing an unequal number of image and mask files.
-    WHEN: The get_path_images_masks function is called.
-    THEN: The function raises a ValueError with the appropriate error message.
-    """
-    img_files = ["patient1.nii", "patient2.nii"]
-    mask_files = ["patient1_seg.nii"]
-
-    for file in img_files + mask_files:
-        (tmp_path / file).write_text("test")
-
-    with pytest.raises(
-        ValueError,
-        match="The number of image files does not match the number of mask files",
-    ):
-        get_path_images_masks(str(tmp_path))
-
-
-def test_get_path_images_masks_multiple_masks_for_one_image(tmp_path):
-    """
-    Test if a directory with more mask files than image files raises ValueError.
-
-    GIVEN: A directory containing more mask files than image files.
-    WHEN: The get_path_images_masks function is called.
-    THEN: The function raises a ValueError with the appropriate error message.
-    """
-    img_files = ["patient1.nii"]
-    mask_files = ["patient1_seg.nii", "patient2_seg.nii"]
-
-    for file in img_files + mask_files:
-        (tmp_path / file).write_text("test")
-
-    with pytest.raises(
-        ValueError,
-        match="The number of image files does not match the number of mask files",
-    ) as exc_info:
+    with pytest.raises(ValueError, match=expected_error):
         get_path_images_masks(str(tmp_path))
 
 
