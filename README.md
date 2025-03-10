@@ -63,10 +63,10 @@ For feature extraction to work correctly, the input **MRI images** and **segment
 Organize you files in the following structure:
 ```
 📂 data/
-├── 📂 Patient_1/
+├── 📂 PR1/
 │   ├── PR1.nii          # MRI Image
 │   ├── PR1_seg.nii      # Segmentation Mask
-├── 📂 Patient_2/
+├── 📂 PR2/
 │   ├── PR2.nii          # MRI Image
 │   ├── PR2_seg.nii      # Segmentation Mask
 ├── pyradiomics_config.yaml     # Pyradiomics configuration file
@@ -126,7 +126,7 @@ The extracted radiomic features are stored in `output_files/` directory as CSV f
 The extracted features can then be used for further analysis or machine learning tasks.
 
 The files you see in the `output_files/` directory serve as an example result, generated using the segmentation masks and MRI images stored in the `data/` directory. 
-**Please note that the example in the output files is based on the default configuration of 3D mode, which is specified in the `config.ini` file. Additionally, the radiomic features are extracted using the provided `pyradiomics_config.yaml` file included as an example.**
+**Please note that the example in the output files is based on the default configuration of 3D mode, which is specified in the** `config.ini` **file. Additionally, the radiomic features are extracted using the provided** `pyradiomics_config.yaml` **file included as an example.**
 This configuration file is set up for a comprehensive radiomic feature extraction, including texture features (GLCM, GLRLM, GLSZM, GLDM, NGTDM), first-order statistics, and shape features. The extraction is performed on the original image and also on transformed images using Wavelet and Laplacian of Gaussian (LoG) filters. 
 For more detailed information on the extracted features, please refer to this website: [Radiomic Features- pyradiomics](https://pyradiomics.readthedocs.io/en/latest/features.html)
 
