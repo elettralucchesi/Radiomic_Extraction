@@ -8,29 +8,31 @@ def extract_largest_region(mask_slice, label_value):
     """
     Extract the largest connected region of a given label from a binary mask slice.
 
-    GIVEN
-    -----
+    This function identifies and extracts the largest connected component 
+    corresponding to a specified label in a 2D mask slice. The extracted region 
+    retains the original label value, while all other regions are set to zero.
+
+    Parameters
+    ----------
     mask_slice : np.ndarray
-        2D array representing the mask slice.
+        A 2D array representing the mask slice.
     label_value : int
-        Integer label whose largest region should be extracted.
+        The integer label whose largest connected region should be extracted.
 
-    WHEN
-    ----
-    The function is called with a valid mask slice and label.
-
-    THEN
-    ----
-    Returns a 2D array containing only the largest connected region of the given label.
+    Returns
+    -------
+    np.ndarray or None
+        A 2D array containing only the largest connected region with the given label,
+        or None if no such region is found.
 
     Raises
     ------
     TypeError
         If `mask_slice` is not a numpy array.
-        If `mask_slice` is an integer and `label_value` is a numpy array.
+        If `mask_slice` is an integer and `label_value` is a numpy array (possible swap).
         If `label_value` is not an integer.
     ValueError
-        If `mask_slice` is not 2D.
+        If `mask_slice` is not a 2D array.
         If `label_value` is negative.
     """
 
@@ -70,27 +72,32 @@ def extract_largest_region(mask_slice, label_value):
 
 def process_slice(mask_slice):
     """
-    Process a mask slice to extract the largest connected region for each label.
+    Extract the largest connected region for each label in a mask slice.
 
-    GIVEN
-    -----
+    This function iterates through all unique labels in a given 2D mask slice, 
+    excluding the background (label 0), and extracts the largest connected region 
+    for each label. The first non-empty largest region found is returned along 
+    with its corresponding label.
+
+    Parameters
+    ----------
     mask_slice : np.ndarray
-        2D array representing the mask slice.
+        A 2D array representing the mask slice.
 
-    WHEN
-    ----
-    The function iterates through all labels in the mask.
+    Returns
+    -------
+    tuple[np.ndarray or None, int or None]
+        A tuple containing the largest region mask and its corresponding label.
+        If no valid region is found, returns (None, None).
 
-    THEN
-    ----
-    Returns a tuple (largest_region_mask, label) containing the largest region found.
-
-        Raises
+    Raises
     ------
-    TypeError: If mask_slice is not a numpy array.
-    ValueError: If mask_slice is not 2D or contains only invalid values.
+    TypeError
+        If `mask_slice` is not a numpy array.
+    ValueError
+        If `mask_slice` is not a 2D array.
     """
-
+    
     if not isinstance(mask_slice, np.ndarray):
         raise TypeError("mask_slice must be a numpy array")
     if mask_slice.ndim != 2:
@@ -111,10 +118,14 @@ def process_slice(mask_slice):
 
 def get_slices_2D(image, mask, patient_id):
     """
-    Extract 2D slices of an image and its corresponding mask.
+    Extract 2D slices from a 3D medical image and its corresponding mask.
 
-    GIVEN
-    -----
+    This function iterates through all slices of a given 3D image and mask, 
+    extracts the largest connected region for each label, and returns relevant 
+    metadata for each valid slice.
+
+    Parameters
+    ----------
     image : sitk.Image
         The 3D medical image.
     mask : sitk.Image
@@ -122,18 +133,15 @@ def get_slices_2D(image, mask, patient_id):
     patient_id : int
         Unique identifier of the patient.
 
-    WHEN
-    ----
-    The function processes each slice of the mask.
-
-    THEN
-    ----
-    Returns a list of dictionaries, each containing:
-        - 'PatientID': Patient identifier.
-        - 'Label': Extracted region label.
-        - 'SliceIndex': Slice index in the volume.
-        - 'ImageSlice': Image slice in SimpleITK format.
-        - 'MaskSlice': Mask slice in SimpleITK format.
+    Returns
+    -------
+    list[dict]
+        A list of dictionaries, where each entry contains:
+        - 'PatientID' (str): The patient identifier formatted as 'PR<number>'.
+        - 'Label' (int): The extracted region label.
+        - 'SliceIndex' (int): The index of the slice in the 3D volume.
+        - 'ImageSlice' (sitk.Image): The extracted 2D image slice.
+        - 'MaskSlice' (sitk.Image): The extracted 2D mask slice.
 
     Raises
     ------
@@ -185,12 +193,15 @@ def get_slices_2D(image, mask, patient_id):
     return patient_slices
 
 
-def get_volume_3D(image, mask, patient_id):
+def get_patient_3D_data(image, mask, patient_id):
     """
-    Extract a 3D volume of an image and its corresponding mask.
+    Retrieve the full 3D image and segmentation mask for a given patient.
 
-    GIVEN
-    -----
+    This function extracts the entire 3D volume of a medical image and its corresponding 
+    segmentation mask, returning structured metadata for a specific patient.
+
+    Parameters
+    ----------
     image : sitk.Image
         The 3D medical image.
     mask : sitk.Image
@@ -198,16 +209,13 @@ def get_volume_3D(image, mask, patient_id):
     patient_id : int
         Unique identifier of the patient.
 
-    WHEN
-    ----
-    The function processes the full 3D volume.
-
-    THEN
-    ----
-    Returns a list containing a dictionary with:
-        - 'PatientID': Patient identifier.
-        - 'ImageVolume': The full 3D image.
-        - 'MaskVolume': The full 3D mask.
+    Returns
+    -------
+    list[dict]
+        A list containing a single dictionary with:
+        - 'PatientID' (str): The patient identifier formatted as 'PR<number>'.
+        - 'ImageVolume' (sitk.Image): The full 3D medical image.
+        - 'MaskVolume' (sitk.Image): The full 3D segmentation mask.
 
     Raises
     ------
@@ -216,7 +224,7 @@ def get_volume_3D(image, mask, patient_id):
     ValueError
         If `patient_id` is not an integer.
     """
-
+    
     if not isinstance(image, sitk.Image):
         raise TypeError("Expected 'image' to be a SimpleITK Image.")
 
@@ -231,33 +239,35 @@ def get_volume_3D(image, mask, patient_id):
 
 def read_image_and_mask(image_path, mask_path):
     """
-    Read an image and its corresponding mask using SimpleITK.
+    Load a medical image and its corresponding segmentation mask from disk.
 
-    GIVEN
-    -----
+    This function reads a medical image and its associated mask using SimpleITK, ensuring 
+    that they are in the same directory and have matching dimensions.
+
+    Parameters
+    ----------
     image_path : str
         Path to the image file.
     mask_path : str
         Path to the mask file.
 
-    WHEN
-    ----
-    The function reads the image and mask from disk.
-
-    THEN
-    ----
-    Returns a tuple containing the image and mask as SimpleITK images.
+    Returns
+    -------
+    tuple[sitk.Image, sitk.Image]
+        A tuple containing:
+        - The image as a SimpleITK Image.
+        - The corresponding mask as a SimpleITK Image.
 
     Raises
     ------
     ValueError
         If any input path is empty.
-        If the parent directories of the image and mask do not match.
+        If the image and mask are not located in the same directory.
         If the image and mask dimensions do not match.
     TypeError
-        If input paths are not strings.
+        If the provided paths are not strings.
     """
-
+    
     if not image_path or not mask_path:
         raise ValueError("Image and mask paths cannot be empty.")
 
@@ -278,34 +288,34 @@ def read_image_and_mask(image_path, mask_path):
 
 def get_patient_image_mask_dict(imgs_path, masks_path, patient_ids, mode):
     """
-    Create a dictionary mapping patient IDs to image-mask data.
+    Generate a dictionary mapping patient IDs to their corresponding image-mask data.
 
-    GIVEN
-    -----
+    This function reads medical images and segmentation masks, associating them 
+    with patient IDs and processing them as either 2D slices or full 3D volumes.
+
+    Parameters
+    ----------
     imgs_path : list[str]
         List of file paths to image files.
     masks_path : list[str]
         List of file paths to mask files.
     patient_ids : set[int]
-        List of patient IDs.
+        Set of unique patient IDs.
     mode : str
-        Either '2D' or '3D' to determine processing type.
+        Processing mode, either '2D' (for extracting slices) or '3D' (for full volumes).
 
-    WHEN
-    ----
-    The function processes each patient's image-mask pair.
-
-    THEN
-    ----
-    Returns a dictionary where each key is a patient ID and the value is:
-        - A list of 2D slices (if mode="2D").
-        - A list with a single 3D volume (if mode="3D").
+    Returns
+    -------
+    dict[int, list[dict]]
+        A dictionary where each key is a patient ID, and the value is:
+        - A list of 2D slice dictionaries (if mode="2D").
+        - A list containing a single dictionary with the full 3D volume (if mode="3D").
 
     Raises
     ------
     ValueError
-        If `imgs_path`, `masks_path`, or `patient_ids` is empty.
-        If `imgs_path`, `masks_path`, and `patient_ids` have different lengths.
+        If any of `imgs_path`, `masks_path`, or `patient_ids` is empty.
+        If the lengths of `imgs_path`, `masks_path`, and `patient_ids` do not match.
         If `mode` is not '2D' or '3D'.
     TypeError
         If `imgs_path` or `masks_path` are not lists of strings.
