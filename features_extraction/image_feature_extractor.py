@@ -2,7 +2,7 @@ import os
 from radiomics import featureextractor
 import SimpleITK as sitk
 import numpy as np
-
+import warnings
 
 def get_extractor(yaml_path):
     """
@@ -83,7 +83,6 @@ def radiomic_extractor_3D(patient_dict_3D, extractor):
         raise ValueError("patient_dict_3D cannot be empty.")
 
     all_features_3D = {}
-    errors = []
 
     for pr_id, patient_data in patient_dict_3D.items():
         patient_volume = patient_data[0]
@@ -103,10 +102,8 @@ def radiomic_extractor_3D(patient_dict_3D, extractor):
                 features = {"MaskLabel": lbl, "PatientID": pr_id, **features}
                 all_features_3D[f"PR{pr_id} - {lbl:d}"] = features
             except Exception as e:
-                errors.append(
-                    f"Invalid Feature for patient PR{pr_id}, label {lbl}: {e}"
-                )
-                print(f"Invalid Feature for patient PR{pr_id}, label {lbl}: {e}")
+                warning_message = f"Invalid Feature for patient PR{pr_id}, label {lbl}: {e}"
+                warnings.warn(warning_message, category=UserWarning)
 
     return all_features_3D
 
