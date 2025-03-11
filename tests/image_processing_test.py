@@ -1,7 +1,8 @@
 import pytest
 from unittest.mock import patch
-from features_extraction.image_processing import *
-from features_extraction.utils import *
+import numpy as np
+import SimpleITK as sitk
+from features_extraction.image_processing import extract_largest_region, process_slice, get_slices_2D, get_patient_3D_data, read_image_and_mask, get_patient_image_mask_dict
 
 
 # ---------------- Extract Largest Region Tests ----------------
