@@ -352,7 +352,7 @@ def get_patient_image_mask_dict(imgs_path, masks_path, patient_ids, mode):
             patient_slices = get_slices_2D(img, mask, pr_id)
             patient_dict[pr_id] = patient_slices
         elif mode == "3D":
-            patient_volume = get_volume_3D(img, mask, pr_id)
+            patient_volume = get_patient_3D_data(img, mask, pr_id)
             patient_dict[pr_id] = patient_volume
         else:
             raise ValueError("Mode should be '2D' or '3D'")
