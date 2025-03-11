@@ -516,22 +516,22 @@ def test_get_slices_2D_skip_slice_on_none():
     assert len(result) == 1, f"Expected 1 slice, but got {len(result)}"
 
 
-# ---------------- Get Volume 3D Tests ----------------
+# ---------------- Get Patient 3D data Tests ----------------
 
 
-def test_get_volume_3D_return_type():
+def test_get_patient_3D_data_return_type():
     """
-    Test that the get_volume_3D function returns a list.
+    Test that the get_patient_3D_data function returns a list.
     
     GIVEN: A 3D image and mask.
-    WHEN: The get_volume_3D function is called.
+    WHEN: The get_patient_3D_data function is called.
     THEN: The function should return a list containing a dictionary with the correct keys.
     """
     image_3d = sitk.Image(3, 3, 3, sitk.sitkUInt8)
     mask_3d = sitk.Image(3, 3, 3, sitk.sitkUInt8)
     patient_id = 1234
 
-    result = get_volume_3D(image_3d, mask_3d, patient_id)
+    result = get_patient_3D_data(image_3d, mask_3d, patient_id)
 
     assert isinstance(
         result, list
@@ -555,24 +555,24 @@ def test_get_volume_3D_return_type():
         ),
     ],
 )
-def test_get_volume_3D_type_error(image, mask, patient_id, expected_message):
+def test_get_patient_3D_data_type_error(image, mask, patient_id, expected_message):
     """
-    Test that get_volume_3D raises TypeError for invalid image or mask inputs.
+    Test that get_patient_3D_data raises TypeError for invalid image or mask inputs.
 
     GIVEN: An invalid image or mask (e.g., a string instead of an image object).
-    WHEN: The get_volume_3D function is called with these invalid inputs.
+    WHEN: The get_patient_3D_data function is called with these invalid inputs.
     THEN: A TypeError should be raised indicating the type mismatch.
     """
     with pytest.raises(TypeError, match=expected_message):
-        get_volume_3D(image, mask, patient_id)
+        get_patient_3D_data(image, mask, patient_id)
 
 
-def test_get_volume_3D_invalid_patient_id():
+def test_get_patient_3D_data_invalid_patient_id():
     """
-    Test that get_volume_3D raises ValueError for invalid patient_id.
+    Test that get_patient_3D_data raises ValueError for invalid patient_id.
 
     GIVEN: A string patient_id.
-    WHEN: The get_volume_3D function is called.
+    WHEN: The get_patient_3D_data function is called.
     THEN: The function should raise a ValueError indicating that patient_id must be int.
     """
     image_3d = sitk.Image(3, 3, 3, sitk.sitkUInt8)
@@ -580,7 +580,7 @@ def test_get_volume_3D_invalid_patient_id():
     patient_id = "123"
 
     with pytest.raises(ValueError, match="Expected 'patient_id' to be a int"):
-        get_volume_3D(image_3d, mask_3d, patient_id)
+        get_patient_3D_data(image_3d, mask_3d, patient_id)
 
 
 # ---------------- Read Image and Mask Tests ----------------
@@ -820,9 +820,9 @@ def test_get_patient_image_mask_dict_invalid_mode(mock_read_image):
 )
 @patch("features_extraction.image_processing.read_image_and_mask")
 @patch("features_extraction.image_processing.get_slices_2D")
-@patch("features_extraction.image_processing.get_volume_3D")
+@patch("features_extraction.image_processing.get_patient_3D_data")
 def test_get_patient_image_mask_dict(
-    mock_get_volume_3D,
+    mock_get_patient_3D_data,
     mock_get_slices_2D,
     mock_read_image_and_mask,
     imgs_path,
@@ -856,7 +856,7 @@ def test_get_patient_image_mask_dict(
         def get_mocked_volume(image, mask, patient_id):
             return [f"volume_{patient_id}"]
 
-        mock_get_volume_3D.side_effect = get_mocked_volume
+        mock_get_patient_3D_data.side_effect = get_mocked_volume
 
     result = get_patient_image_mask_dict(imgs_path, masks_path, patient_ids, mode)
 
