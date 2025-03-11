@@ -1,5 +1,7 @@
 import pytest
-from features_extraction.image_feature_extractor import *
+import numpy as np
+from radiomics import featureextractor
+from features_extraction.image_feature_extractor import get_extractor, radiomic_extractor_3D, radiomic_extractor_2D, extract_radiomic_features
 from unittest.mock import Mock
 import SimpleITK as sitk
 
