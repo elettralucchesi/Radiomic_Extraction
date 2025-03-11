@@ -1,5 +1,5 @@
 import pytest
-from features_extraction.utils import *
+from features_extraction.utils import get_path_images_masks, extract_id, new_patient_id, assign_patient_ids
 
 
 # ------------------- Get Path Images Masks tests -------------------
