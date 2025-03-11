@@ -6,29 +6,29 @@ import warnings
 
 def get_extractor(yaml_path):
     """
-    Create a RadiomicsFeatureExtractor with a specified configuration file.
+    Initialize a RadiomicsFeatureExtractor using a specified YAML configuration file.
 
-    GIVEN
-    -----
+    This function loads configuration parameters from a YAML file and creates a 
+    `RadiomicsFeatureExtractor` object for extracting radiomic features.
+
+    Parameters
+    ----------
     yaml_path : str
         Path to the YAML file containing configuration parameters.
 
-    WHEN
-    ----
-    The function initializes the feature extractor using the given YAML configuration.
-
-    THEN
-    ----
-    Returns a configured RadiomicsFeatureExtractor object.
+    Returns
+    -------
+    radiomics.featureextractor.RadiomicsFeatureExtractor
+        A configured feature extractor ready for use.
 
     Raises
     ------
     TypeError
         If `yaml_path` is not a string.
     ValueError
-        If `yaml_path` is empty.
+        If `yaml_path` is an empty string.
     FileNotFoundError
-        If `yaml_path` does not exist.
+        If the specified `yaml_path` does not exist.
     """
 
     if not isinstance(yaml_path, str):
@@ -46,22 +46,24 @@ def get_extractor(yaml_path):
 
 def radiomic_extractor_3D(patient_dict_3D, extractor):
     """
-    Extract radiomic features from 3D medical images.
+    Extract radiomic features from 3D medical images using a configured extractor.
 
-    GIVEN
-    -----
+    This function processes 3D images and their corresponding masks for each patient,
+    extracting radiomic features from labeled regions in the mask.
+
+    Parameters
+    ----------
     patient_dict_3D : dict
-        Dictionary containing patient 3D images and masks.
-    extractor : RadiomicsFeatureExtractor
-        Configured feature extractor.
+        Dictionary where each key is a patient ID and the value is a list containing 
+        a single dictionary with the 3D image (`"ImageVolume"`) and the mask (`"MaskVolume"`).
+    extractor : radiomics.featureextractor.RadiomicsFeatureExtractor
+        A configured feature extractor for radiomic feature computation.
 
-    WHEN
-    ----
-    The function iterates through each patient, extracting features from labeled mask regions.
-
-    THEN
-    ----
-    Returns a dictionary containing extracted features for each patient and label.
+    Returns
+    -------
+    dict
+        A dictionary where each key follows the format `"PR{patient_id} - {label}"`,
+        and the value is a dictionary of extracted features, including `"MaskLabel"` and `"PatientID"`.
 
     Raises
     ------
@@ -69,9 +71,9 @@ def radiomic_extractor_3D(patient_dict_3D, extractor):
         If `patient_dict_3D` is not a dictionary.
         If `extractor` is not an instance of `RadiomicsFeatureExtractor`.
     ValueError
-        If `patient_dict_3D` is empty
+        If `patient_dict_3D` is empty.
         If no labels are found in the mask for a given patient.
-    
+
     Warns
     -----
     UserWarning
@@ -115,22 +117,28 @@ def radiomic_extractor_3D(patient_dict_3D, extractor):
 
 def radiomic_extractor_2D(patient_dict_2D, extractor):
     """
-    Extract radiomic features from 2D medical image slices.
+    Extract radiomic features from 2D medical image slices using a configured extractor.
 
-    GIVEN
-    -----
+    This function processes 2D image slices and their corresponding masks for each patient,
+    extracting radiomic features from labeled regions in the mask.
+
+    Parameters
+    ----------
     patient_dict_2D : dict
-        Dictionary containing patient 2D slices.
-    extractor : RadiomicsFeatureExtractor
-        Configured feature extractor.
+        Dictionary where each key is a patient ID and the value is a list of dictionaries.
+        Each dictionary represents a single 2D slice and contains:
+            - `"ImageSlice"`: The 2D medical image.
+            - `"MaskSlice"`: The corresponding 2D mask.
+            - `"Label"`: The segmentation label in the mask.
+            - `"SliceIndex"`: The index of the slice in the patient volume.
+    extractor : radiomics.featureextractor.RadiomicsFeatureExtractor
+        A configured feature extractor for radiomic feature computation.
 
-    WHEN
-    ----
-    The function iterates through each patient slice, extracting features from labeled mask regions.
-
-    THEN
-    ----
-    Returns a dictionary containing extracted features for each patient slice and label.
+    Returns
+    -------
+    dict
+        A dictionary where each key follows the format `"{patient_id}-{slice_index}-{label}"`,
+        and the value is a dictionary of extracted features, including `"MaskLabel"`, `"SliceIndex"`, and `"PatientID"`.
 
     Raises
     ------
@@ -138,13 +146,13 @@ def radiomic_extractor_2D(patient_dict_2D, extractor):
         If `patient_dict_2D` is not a dictionary.
         If `extractor` is not an instance of `RadiomicsFeatureExtractor`.
     ValueError
-        If `patient_dict_2D` is empty
-        If no labels are found in the mask for a given patient.
-        
+        If `patient_dict_2D` is empty.
+        If no labels are found in the mask for a given patient slice.
+
     Warns
     -----
     UserWarning
-        If feature extraction fails for a patient, a warning is issued.
+        If feature extraction fails for a patient slice, a warning is issued.
     """
 
     if not isinstance(patient_dict_2D, dict):
@@ -189,24 +197,29 @@ def radiomic_extractor_2D(patient_dict_2D, extractor):
 
 def extract_radiomic_features(patient_dict, extractor, mode="3D"):
     """
-    Extract radiomic features from medical images in either 2D or 3D mode.
+    Extract radiomic features from medical images, supporting both 2D and 3D processing modes.
 
-    GIVEN
-    -----
+    This function processes a patient dataset and extracts radiomic features using a configured
+    feature extractor, either in 2D (slice-wise) or 3D (volume-wise) mode.
+
+    Parameters
+    ----------
     patient_dict : dict
-        Dictionary containing patient data.
-    extractor : RadiomicsFeatureExtractor
-        Configured feature extractor.
-    mode : str
-        Processing mode, either "2D" or "3D". Defaults to "3D".
+        Dictionary containing patient imaging data.
+        - If `mode="3D"`, it should contain 3D volumes and corresponding masks.
+        - If `mode="2D"`, it should contain lists of 2D slices and their corresponding masks.
+    extractor : radiomics.featureextractor.RadiomicsFeatureExtractor
+        A configured feature extractor for radiomic feature computation.
+    mode : str, optional
+        Processing mode, either `"2D"` or `"3D"`. Defaults to `"3D"`.
 
-    WHEN
-    ----
-    The function processes the patient dictionary based on the specified mode.
-
-    THEN
-    ----
-    Returns a dictionary with extracted radiomic features.
+    Returns
+    -------
+    dict
+        A dictionary containing the extracted radiomic features.
+        The structure of the output depends on the processing mode:
+        - In `"3D"` mode, features are extracted for entire volumes.
+        - In `"2D"` mode, features are extracted for individual slices.
 
     Raises
     ------
@@ -214,8 +227,9 @@ def extract_radiomic_features(patient_dict, extractor, mode="3D"):
         If `patient_dict` is not a dictionary.
         If `extractor` is not an instance of `RadiomicsFeatureExtractor`.
     ValueError
-        If `mode` is not "2D" or "3D".
+        If `mode` is not `"2D"` or `"3D"`.
     """
+
     if not isinstance(patient_dict, dict):
         raise TypeError("patient_dict must be a dictionary.")
     if mode not in ["2D", "3D"]:
